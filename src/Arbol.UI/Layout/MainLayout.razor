@@ -3,36 +3,32 @@
 <a class="skip-link" href="#main-content" data-enhance-nav="false">Skip to content</a>
 
 <div class="page">
-    <FluentLayout Id="app-layout" Class="app-layout" GlobalScrollbar="true" Height="auto">
-        <FluentLayoutItem Area="LayoutArea.Header">
-            <header class="site-header">
-                <FluentStack VerticalAlignment="VerticalAlignment.Center" HorizontalGap="var(--spacingHorizontalM)" Height="100%">
-                    <div class="menu-toggle">
-                        <FluentLayoutHamburger Id="site-menu" PanelHeader="Arbol" />
-                    </div>
-                    <a class="site-name" href="/">Arbol</a>
-                </FluentStack>
-            </header>
-        </FluentLayoutItem>
-        <FluentLayoutItem Area="LayoutArea.Navigation" Class="site-navigation">
-            <NavMenu />
-        </FluentLayoutItem>
-        <FluentLayoutItem Area="LayoutArea.Content">
-            <main id="main-content" class="content-container" tabindex="-1">
-                @Body
-            </main>
-        </FluentLayoutItem>
-        <FluentLayoutItem Area="LayoutArea.Footer">
-            <PwaUpdateNotice />
-            <footer class="site-footer"><PwaControls />Arbol</footer>
-        </FluentLayoutItem>
-    </FluentLayout>
+    <input type="checkbox" id="site-menu-toggle" class="site-menu-toggle"
+           aria-label="Show navigation menu" aria-controls="site-navigation" />
+    <header class="site-header">
+        <label class="site-menu-button" for="site-menu-toggle">
+            <span class="site-menu-icon" aria-hidden="true"></span>
+            <span>Menu</span>
+        </label>
+        <a class="site-name" href="/">Arbol</a>
+    </header>
+    <div id="site-navigation" class="site-navigation">
+        <NavMenu />
+    </div>
+    <main id="main-content" class="content-container" tabindex="-1">
+        @Body
+    </main>
+    <footer class="site-footer">
+        <PwaUpdateNotice />
+        <PwaControls />
+        <span>Arbol</span>
+    </footer>
 </div>
 
 <div id="blazor-error-ui" data-nosnippet>
-    <FluentStack Class="error-content" VerticalAlignment="VerticalAlignment.Center" HorizontalGap="var(--spacingHorizontalL)" Wrap="true">
+    <div class="error-content">
         <span>An unhandled error has occurred.</span>
         <a href="." class="reload">Reload</a>
         <button type="button" class="dismiss">Dismiss</button>
-    </FluentStack>
+    </div>
 </div>

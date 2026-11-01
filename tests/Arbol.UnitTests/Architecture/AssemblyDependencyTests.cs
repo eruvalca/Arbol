@@ -63,7 +63,7 @@ public sealed class AssemblyDependencyTests
     public void SharedKernelDoesNotDependOnPresentationFrameworks()
     {
         var presentation = Types(includeReferenced: true).That().ResideInNamespaceMatching(
-            @"^(Microsoft\.AspNetCore|Microsoft\.JSInterop|Microsoft\.FluentUI)(\.|$)");
+            @"^(Microsoft\.AspNetCore|Microsoft\.JSInterop)(\.|$)");
 
         AssertNoDependencies(_sharedKernel, presentation,
             "Shared contracts and calculations must be independent of web and UI frameworks.");

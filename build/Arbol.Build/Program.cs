@@ -11,11 +11,6 @@ ConsoleCancelEventHandler cancel = (_, args) =>
 Console.CancelKeyPress += cancel;
 try
 {
-    if (args is ["patch-fluent", var source, var destination])
-    {
-        return await PatchFluentModule.RunAsync(source, destination, cancellation.Token);
-    }
-
     if (args.Length != 5)
     {
         await Console.Error.WriteLineAsync("Expected: project-directory root-namespace define-constants components-manifest compile-manifest");

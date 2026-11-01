@@ -1,0 +1,5 @@
+.pwa-update-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs, 0.5rem);
+}

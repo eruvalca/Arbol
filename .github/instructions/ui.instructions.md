@@ -10,8 +10,9 @@ tests. Keep the repository-wide project boundaries and validation requirements i
 force, and the [C# and Razor conventions](csharp.instructions.md) for code-behind.
 For account behavior, also read the [account guide](account.instructions.md) and
 the [server guide](server.instructions.md), including when shared UI changes can
-affect static Identity pages. See the [root README](../../README.md) for Fluent
-assets/provider setup and [build rules](../../build/README.md) for enforcement.
+affect static Identity pages. See the [root README](../../README.md) for the
+styling and layout architecture and [build rules](../../build/README.md) for
+enforcement.
 
 ## Razor components
 
@@ -41,41 +42,47 @@ assets/provider setup and [build rules](../../build/README.md) for enforcement.
   requirements, including the ban on serializing tokens or reusing a completed
   prerender request's token in a circuit.
 
-## Fluent UI, styling, and layout
+## Styling and layout
 
-- Fluent UI Blazor v5+ is this solution's UI framework: use its layout,
-  navigation, controls, icons, typography, spacing, and theme tokens. Prefer
-  `FluentLayout`, `FluentGrid`/`FluentGridItem`, and `FluentStack` over hand-built
-  CSS Grid/Flexbox layouts. Verify APIs against the centrally pinned release and
-  Fluent MCP documentation; v4 examples are not compatible and v5+ does not mean
-  floating package versions. Do not introduce a second styling/component framework.
-- Keep the shared baseline and reusable form, action, notice, and table patterns
-  in `src/Arbol/wwwroot/app.css`. Keep component-specific rules in adjacent
-  `.razor.css` files, with narrowly scoped `::deep` selectors only when child
-  component markup requires them. Custom CSS supplements Fluent for application
-  sizing, accessibility, and static Identity forms; it is not a competing design
-  system. Use Fluent design tokens instead of unrelated colors and spacing.
+- This solution has no UI component library. Build the interface from semantic
+  HTML with CSS Grid for layout and CSS for styling. Do not add a component
+  framework, a CSS framework, a CSS preprocessor, or utility classes.
+- Declare reusable values as custom properties in the `:root` block of
+  `src/Arbol/wwwroot/app.css` and reference them from every stylesheet. Use the
+  existing `--color-*`, `--space-*`, `--radius-*`, `--shadow-card`, and
+  `--font-sans` tokens instead of new literal colours and sizes; add a token when
+  a value is reused.
+- Keep the shared baseline and reusable form, button, card, navigation, notice,
+  and table patterns in `app.css` (`account-form`, `form-field`, `checkbox-field`,
+  `actions`, `button-primary`, `button-subtle`, `card`, `card-links`, `nav-list`,
+  `nav-section-label`, `notice`, `table-container`). Keep component-specific rules
+  in adjacent `.razor.css` files, with narrowly scoped `::deep` selectors only
+  when child component markup requires them.
 - A malformed `.razor.css` rule is not a build error. It reaches the generated
   scoped-CSS bundle as written, and an unterminated block swallows every following
   rule in the assembly, breaking unrelated pages. Verify scoped-CSS edits with a
   browser test.
-- Use descriptive classes rather than framework utilities. Do not reintroduce
-  Bootstrap, `!important`, or ornamental animations. Prefer Fluent layout and
-  spacing parameters over handwritten inline styles. Fluent's own generated
-  styles are expected. Use the v5 icons package for meaningful navigation/action
-  icons, keep visible labels, and leave redundant icons nonfocusable and hidden
-  from assistive technology. Keep native Identity inputs and submit buttons:
-  their static SSR form mapping, browser autofill, and passkey submitter contracts
-  must work without an interactive form. Do not bulk-convert them to web components.
-- Static `FluentNavItem` links need `tabindex="0"` because their interactive
-  roving-tabindex initialization does not run. Keep enhanced navigation enabled
-  for shell links. The shared UI's JS initializer closes the static Fluent mobile
-  drawer on `enhancednavigationstart`; do not force full reloads to close it.
-  Keep the layout and hamburger IDs stable across server renders. Identity POSTs
-  still perform normal navigation to refresh cookies and authentication state.
-  Keep the shell on document scrolling so enhanced navigation can reset and
-  restore scroll position; a separate layout scrollbar needs its own handling.
-  See `README.md` for Fluent assets and provider setup.
+- Use descriptive classes rather than utility classes. Do not reintroduce
+  Bootstrap, `!important`, or ornamental animations, and do not hand-write inline
+  styles for ordinary layout or spacing. Prefer normal flow and CSS Grid.
+- The shell is one CSS Grid in `MainLayout.razor.css` with named `header`,
+  `navigation`, `content`, and `footer` areas. At 48rem and wider the navigation is
+  a side column; below it the grid collapses to one column and the navigation
+  becomes the `#site-menu-toggle` disclosure panel. Keep the toggle a real
+  focusable input with a visible `<label>`, keep `#main-content` and the layout IDs
+  stable across server renders, and close the panel from `MainLayout.razor.js` on
+  `enhancednavigationstart`. Do not force full reloads to close it.
+- Keep enhanced navigation enabled for shell links. Identity POSTs still perform
+  normal navigation to refresh cookies and authentication state. Keep the shell on
+  document scrolling so enhanced navigation can reset and restore scroll position;
+  a separate layout scrollbar needs its own handling.
+- Give each navigation region its own `<nav aria-label>` containing a `<ul>` of
+  `NavLink`s. Native anchors are focusable without a `tabindex` override, and
+  `NavLink` supplies `aria-current="page"`. The shell provides the grid cell, not
+  a second navigation landmark.
+- Keep native Identity inputs and submit buttons: their static SSR form mapping,
+  browser autofill, and passkey submitter contracts must work without an
+  interactive form. Do not replace them with interactive components.
 - Make layouts shrink and wrap on narrow screens, preserve visible keyboard
   focus, and put form labels before their controls. Preserve semantic links,
   buttons, tables, and all Blazor/Identity form and reconnect hooks.

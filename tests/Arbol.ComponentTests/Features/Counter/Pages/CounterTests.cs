@@ -1,7 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Bunit;
 using Microsoft.AspNetCore.Components;
-using Microsoft.FluentUI.AspNetCore.Components;
 using Shouldly;
 using Xunit;
 using CounterPage = Arbol.UI.Features.Counter.Pages.Counter;
@@ -19,17 +18,19 @@ public sealed class CounterTests
     public async Task RenderShowsInitialCountAndIncrementButtonAsync(string renderer, bool interactive)
     {
         await using var context = new BunitContext();
-        context.Services.AddFluentUIComponents();
-        context.ComponentFactories.AddStub<FluentProviders>();
         context.Renderer.SetRendererInfo(new RendererInfo(renderer, interactive));
 
         var component = context.Render<CounterPage>();
 
         component.Find("h1").TextContent.ShouldBe("Counter");
         component.Find("[role='status']").TextContent.ShouldBe("Current count: 0");
-        component.Find("fluent-button").TextContent.Trim().ShouldBe("Click me");
-        component.Find("fluent-button").GetAttribute("appearance").ShouldBe("primary");
-        component.Find("fluent-button").HasAttribute("disabled").ShouldBe(!interactive);
+        var button = component.Find("button");
+        button.TextContent.Trim().ShouldBe("Click me");
+        var classes = button.GetAttribute("class") ?? string.Empty;
+        classes.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Any(token => string.Equals(token, "button-primary", StringComparison.Ordinal))
+            .ShouldBeTrue("the increment control must use the shared primary button style");
+        button.HasAttribute("disabled").ShouldBe(!interactive);
     }
 
     [Theory]
@@ -39,14 +40,12 @@ public sealed class CounterTests
     public async Task ClickingIncrementButtonUpdatesDisplayedCountAsync(int clicks, string expectedStatus)
     {
         await using var context = new BunitContext();
-        context.Services.AddFluentUIComponents();
-        context.ComponentFactories.AddStub<FluentProviders>();
         context.Renderer.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         var component = context.Render<CounterPage>();
 
         for (var click = 0; click < clicks; click++)
         {
-            await component.Find("fluent-button").ClickAsync();
+            await component.Find("button").ClickAsync();
         }
 
         await component.WaitForAssertionAsync(() => component.Find("[role='status']").TextContent.ShouldBe(expectedStatus));
@@ -57,16 +56,12 @@ public sealed class CounterTests
     {
         await using var firstContext = new BunitContext();
         await using var secondContext = new BunitContext();
-        firstContext.Services.AddFluentUIComponents();
-        secondContext.Services.AddFluentUIComponents();
-        firstContext.ComponentFactories.AddStub<FluentProviders>();
-        secondContext.ComponentFactories.AddStub<FluentProviders>();
         firstContext.Renderer.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         secondContext.Renderer.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
         var first = firstContext.Render<CounterPage>();
         var second = secondContext.Render<CounterPage>();
 
-        await first.Find("fluent-button").ClickAsync();
+        await first.Find("button").ClickAsync();
 
         await first.WaitForAssertionAsync(() => first.Find("[role='status']").TextContent.ShouldBe("Current count: 1"));
         second.Find("[role='status']").TextContent.ShouldBe("Current count: 0");

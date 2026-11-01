@@ -1,7 +1,7 @@
 <section id="pwa-update" class="notice" data-kind="information" aria-label="Application update" hidden>
     <p role="status" data-pwa-update-message>A new version of Arbol is ready. Save your work before reloading.</p>
-    <FluentStack HorizontalGap="var(--spacingHorizontalS)" Wrap="true">
-        <FluentButton Type="ButtonType.Button" Appearance="ButtonAppearance.Primary" data-pwa-reload tabindex="0">Reload to update</FluentButton>
-        <FluentButton Type="ButtonType.Button" Appearance="ButtonAppearance.Subtle" data-pwa-later tabindex="0">Later</FluentButton>
-    </FluentStack>
+    <div class="pwa-update-actions">
+        <button type="button" class="button-primary" data-pwa-reload>Reload to update</button>
+        <button type="button" class="button-subtle" data-pwa-later>Later</button>
+    </div>
 </section>

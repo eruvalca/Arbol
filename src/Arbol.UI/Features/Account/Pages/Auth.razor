@@ -9,12 +9,10 @@
 <h1>You are authenticated</h1>
 
 <AuthorizeView>
-    <div class="account-summary">
-        <FluentCard>
-            <FluentStack Orientation="Orientation.Vertical" VerticalGap="var(--spacingVerticalM)">
-                <p>Hello @context.User.Identity?.Name!</p>
-                <a href="Account/Manage">Manage your account</a>
-            </FluentStack>
-        </FluentCard>
-    </div>
+    <section class="card account-summary">
+        <p>Hello @context.User.Identity?.Name!</p>
+        <ul class="card-links">
+            <li><a href="Account/Manage">Manage your account</a></li>
+        </ul>
+    </section>
 </AuthorizeView>

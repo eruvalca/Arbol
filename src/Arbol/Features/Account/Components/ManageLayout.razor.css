@@ -1,5 +1,16 @@
-.account-layout ::deep .account-panel {
-    display: block;
+.account-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-lg, 1.5rem);
+    align-items: start;
+}
+
+@media (min-width: 62rem) {
+    .account-layout {
+        grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr);
+    }
+}
+
+.account-panel {
     min-width: 0;
-    padding: var(--spacingVerticalXXL) var(--spacingHorizontalXXL);
 }

@@ -2,7 +2,7 @@
   "id": "/",
   "name": "Arbol",
   "short_name": "Arbol",
-  "description": "Blazor Web App on .NET 10 with Fluent UI and Aspire.",
+  "description": "Blazor Web App on .NET 10 with Aspire and PostgreSQL.",
   "lang": "en",
   "start_url": "/",
   "scope": "/",

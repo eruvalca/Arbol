@@ -33,7 +33,7 @@ public sealed class ApplicationStartupTests
 
         var home = await client.GetStringAsync(new Uri("/", UriKind.Relative), timeout.Token);
         home.ShouldContain("Welcome to Arbol");
-        home.ShouldContain("fluent-layout");
+        home.ShouldContain("site-navigation");
 
         using var openApi = await client.GetAsync(new Uri("/openapi/v1.json", UriKind.Relative), timeout.Token);
         openApi.StatusCode.ShouldBe(HttpStatusCode.OK, "/openapi/v1.json");

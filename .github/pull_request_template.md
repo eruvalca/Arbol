@@ -5,7 +5,7 @@
 ## Scope
 
 - [ ] Application behavior
-- [ ] UI, rendering, or Fluent components
+- [ ] UI, rendering, or styling
 - [ ] Account and Identity workflows
 - [ ] Persistence, migrations, or data shape
 - [ ] Build, CI, or infrastructure

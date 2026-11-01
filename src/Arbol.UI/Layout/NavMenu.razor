@@ -3,23 +3,23 @@
 @inject NavigationManager NavigationManager
 
 <div class="navigation-content">
-    @* Static SSR does not run FluentNav's roving-tabindex initialization. Keep
-       native links keyboard reachable, including before Blazor starts. *@
-    <FluentNav UseIcons="true" aria-label="Main navigation">
-        <FluentNavItem Href="/" Match="NavLinkMatch.All" IconRest="@(new Icons.Regular.Size20.Home())" IconActive="@(new Icons.Filled.Size20.Home())" tabindex="0">Home</FluentNavItem>
-        <FluentNavItem Href="counter" IconRest="@(new Icons.Regular.Size20.NumberSymbol())" IconActive="@(new Icons.Filled.Size20.NumberSymbol())" tabindex="0">Counter</FluentNavItem>
-        <FluentNavItem Href="auth" IconRest="@(new Icons.Regular.Size20.ShieldLock())" IconActive="@(new Icons.Filled.Size20.ShieldLock())" tabindex="0">Auth Required</FluentNavItem>
-        <FluentNavSectionHeader Title="Account" />
-        <AuthorizeView>
-            <Authorized>
-                <FluentNavItem Href="Account/Manage" IconRest="@(new Icons.Regular.Size20.Person())" tabindex="0">@context.User.Identity?.Name</FluentNavItem>
-            </Authorized>
-            <NotAuthorized>
-                <FluentNavItem Href="Account/Register" IconRest="@(new Icons.Regular.Size20.PersonAdd())" tabindex="0">Register</FluentNavItem>
-                <FluentNavItem Href="Account/Login" IconRest="@(new Icons.Regular.Size20.ArrowEnter())" tabindex="0">Login</FluentNavItem>
-            </NotAuthorized>
-        </AuthorizeView>
-    </FluentNav>
+    <nav aria-label="Main navigation">
+        <ul class="nav-list">
+            <li><NavLink href="/" Match="NavLinkMatch.All">Home</NavLink></li>
+            <li><NavLink href="counter">Counter</NavLink></li>
+            <li><NavLink href="auth">Auth Required</NavLink></li>
+            <li class="nav-section-label">Account</li>
+            <AuthorizeView>
+                <Authorized>
+                    <li><NavLink href="Account/Manage">@context.User.Identity?.Name</NavLink></li>
+                </Authorized>
+                <NotAuthorized>
+                    <li><NavLink href="Account/Register">Register</NavLink></li>
+                    <li><NavLink href="Account/Login">Login</NavLink></li>
+                </NotAuthorized>
+            </AuthorizeView>
+        </ul>
+    </nav>
     <AuthorizeView>
         <Authorized>
             <form class="logout-form" action="Account/Logout" method="post">

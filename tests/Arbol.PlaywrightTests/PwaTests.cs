@@ -272,7 +272,7 @@ public sealed class PwaTests(ITestOutputHelper output)
         await page.GotoAsync("/Account/Login");
         await page.GetByLabel("Email", new() { Exact = true }).WaitForAsync();
         (await page.EvaluateAsync<string>("async () => (await fetch('/service-worker.js')).headers.get('content-type')")).ShouldStartWith("text/javascript");
-        await page.WaitForFunctionAsync("() => Boolean(window.arbolWorkerRegistrationError) || (Boolean(navigator.serviceWorker.controller) && Boolean(customElements.get('fluent-button')))");
+        await page.WaitForFunctionAsync("() => Boolean(window.arbolWorkerRegistrationError) || (Boolean(navigator.serviceWorker.controller) && typeof Blazor !== 'undefined')");
         (await page.EvaluateAsync<string?>("() => window.arbolWorkerRegistrationError ?? null"))
             .ShouldBeNull("The application's service-worker registration must succeed; check the browser's HTTPS certificate trust if it fails.");
     }

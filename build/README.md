@@ -113,24 +113,6 @@ control. Do not introduce nested `Directory.Packages.props` files or per-project
 `VersionOverride` entries without a documented need: NuGet automatically imports
 only the nearest central package file.
 
-## Fluent UI lifetime compatibility
-
-The server imports `build/FluentAsset.targets` to serve a generated copy of the
-pinned Fluent UI 5.0.1 initializer. Its theme-string cache retains old theme
-objects; the patch substitutes a weak theme-object cache. Fluent 5.0.0 also
-needed a FAST definition-observer replacement, but the FAST bundled with 5.0.1
-holds pending elements through `WeakRef` and a one-shot template subscription,
-so that part was removed.
-
-`Arbol.Build patch-fluent` verifies the original bundle's SHA-256 before
-applying the narrowly scoped replacement. A package upgrade with a different
-bundle fails explicitly: reassess the upstream behavior and remove the
-compatibility fix when it is no longer needed. Do not weaken the checksum check or
-edit the installed NuGet package. The generated module lives under the server's
-`IntermediateOutputPath`, is registered for cleaning, and receives new static
-asset fingerprint/integrity metadata. Browser validation must use the served
-asset and verify collection of removed controls, themes, and enhanced navigation.
-
 ## PWA build assets
 
 The server imports `build/PwaAssets.targets`. Before `AssignTargetPaths`,
@@ -163,8 +145,8 @@ WebAssembly template's cached `index.html` strategy to this mixed SSR/Auto app.
 Validate both a solution build and `dotnet publish src/Arbol/Arbol.csproj
 --configuration Release --output artifacts/pwa-publish`. Confirm the manifest,
 icons, generated worker, and fallback assets are present. The icons under
-`src/Arbol/wwwroot/icons` are neutral placeholders (a letter on the Fluent
-brand colour); replace them with product artwork before shipping, keeping the
+`src/Arbol/wwwroot/icons` are neutral placeholders (a letter on the brand
+colour); replace them with product artwork before shipping, keeping the
 declared sizes and the maskable variant. Browser checks run
 against the actual Aspire-hosted application with disposable storage;
 see the [test guide](../tests/README.md#choosing-an-integration-layer) and the

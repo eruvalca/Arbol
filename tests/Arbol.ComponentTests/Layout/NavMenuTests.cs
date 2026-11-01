@@ -4,7 +4,6 @@ using Bogus;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.FluentUI.AspNetCore.Components;
 using Shouldly;
 using Xunit;
 
@@ -20,7 +19,6 @@ public sealed class NavMenuTests
     public async Task AuthenticationStateSelectsGuestLinksOrEncodedIdentityAndLogoutAsync(bool authenticated)
     {
         await using var context = new BunitContext();
-        ConfigureFluentNavigation(context);
         var authorization = context.AddAuthorization();
         var faker = new Faker { Random = new Randomizer(7214) };
         var userName = faker.Internet.UserName() + "<admin>";
@@ -31,11 +29,19 @@ public sealed class NavMenuTests
 
         var component = context.Render<NavMenu>();
 
-        foreach (var link in component.FindAll("nav a"))
+        var links = component.FindAll("nav a");
+        links.ShouldNotBeEmpty();
+        foreach (var link in links)
         {
             link.Closest("[data-enhance-nav='false']").ShouldBeNull();
-            link.GetAttribute("tabindex").ShouldBe("0");
+            // Native anchors handle their own focus order; no tabindex override.
+            link.GetAttribute("tabindex").ShouldBeNull();
         }
+
+        // .NET 10's NavLink takes its target from the routed href attribute and
+        // must still report the active page to assistive technology.
+        component.Find("a[href='/']").GetAttribute("aria-current").ShouldBe("page");
+        component.FindAll("a[aria-current='page']").Count.ShouldBe(1);
 
         if (authenticated)
         {
@@ -55,7 +61,6 @@ public sealed class NavMenuTests
     public async Task LogoutReturnUrlTracksNavigationAndStopsUpdatingAfterDisposalAsync()
     {
         await using var context = new BunitContext();
-        ConfigureFluentNavigation(context);
         context.AddAuthorization().SetAuthorized("member");
         var navigation = context.Services.GetRequiredService<NavigationManager>();
         navigation.NavigateTo("events?search=a%26b#upcoming");
@@ -70,13 +75,5 @@ public sealed class NavMenuTests
         await component.InvokeAsync(() => navigation.NavigateTo("auth"));
 
         component.Find("input[name='ReturnUrl']").GetAttribute("value").ShouldBe("counter?count=2&mode=short#value");
-    }
-
-    private static void ConfigureFluentNavigation(BunitContext context)
-    {
-        context.Services.AddFluentUIComponents();
-        var module = context.JSInterop.SetupModule("./_content/Microsoft.FluentUI.AspNetCore.Components/Components/Nav/FluentNav.razor.js");
-        module.SetupVoid("Microsoft.FluentUI.Blazor.Nav.Initialize", _ => true).SetVoidResult();
-        module.SetupVoid("Microsoft.FluentUI.Blazor.Nav.Dispose", _ => true).SetVoidResult();
     }
 }

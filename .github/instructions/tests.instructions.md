@@ -30,7 +30,7 @@ the [test README](../../tests/README.md).
   migrations, SQL constraints and focused service/dependency behavior. Use
   `Arbol.AspireIntegrationTests` for the actual AppHost graph, migration startup,
   service discovery, readiness, and cross-process HTTP behavior. Use
-  `Arbol.PlaywrightTests` for real browser navigation, Fluent web components,
+  `Arbol.PlaywrightTests` for real browser navigation, responsive layout,
   responsive layout, and interactive workflows. Run affected infrastructure suites;
   the full solution test command runs all five projects and requires their tools.
   Keep the full solution build requirement above.

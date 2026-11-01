@@ -1,12 +1,14 @@
 .navigation-content {
+    display: grid;
+    gap: var(--space-md, 1rem);
     min-width: 0;
 }
 
-.navigation-content ::deep a {
-    white-space: normal;
-    overflow-wrap: anywhere;
+.navigation-content nav {
+    min-width: 0;
 }
 
 .logout-form {
-    margin: 1rem;
+    margin: 0;
+    padding-inline: var(--space-sm, 0.75rem);
 }

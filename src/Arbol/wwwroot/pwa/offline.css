@@ -1,23 +1,23 @@
-/* Self-contained Fluent token fallbacks: this document must work without Blazor. */
+/* Self-contained tokens: this document must work without Blazor or app.css. */
 :root {
     color-scheme: light dark;
-    --colorNeutralBackground1: #ffffff;
-    --colorNeutralForeground1: #242424;
-    --colorBrandBackground: #0f6cbd;
-    --colorNeutralForegroundOnBrand: #ffffff;
-    --colorBrandForegroundLink: #0f6cbd;
-    --spacingHorizontalXL: 20px;
-    --spacingVerticalXXXL: 32px;
-    --borderRadiusMedium: 4px;
-    --fontFamilyBase: "Segoe UI", sans-serif;
+    --color-surface: #ffffff;
+    --color-text: #242424;
+    --color-accent: #0f6cbd;
+    --color-on-accent: #ffffff;
+    --color-link: #0f6cbd;
+    --space-lg: 1.25rem;
+    --space-xl: 2rem;
+    --radius-sm: 4px;
+    --font-sans: "Segoe UI", system-ui, sans-serif;
 }
 
 body {
     margin: 0;
-    padding: var(--spacingHorizontalXL);
-    background: var(--colorNeutralBackground1);
-    color: var(--colorNeutralForeground1);
-    font-family: var(--fontFamilyBase);
+    padding: var(--space-lg);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: var(--font-sans);
     line-height: 1.6;
 }
 
@@ -32,20 +32,20 @@ h1 {
 }
 
 img {
-    border-radius: var(--borderRadiusMedium);
+    border-radius: var(--radius-sm);
 }
 
 a {
-    color: var(--colorBrandForegroundLink);
+    color: var(--color-link);
 }
 
 .retry {
     display: inline-block;
-    margin-block-start: var(--spacingHorizontalXL);
+    margin-block-start: var(--space-lg);
     padding: 0.65rem 1.25rem;
-    border-radius: var(--borderRadiusMedium);
-    background: var(--colorBrandBackground);
-    color: var(--colorNeutralForegroundOnBrand);
+    border-radius: var(--radius-sm);
+    background: var(--color-accent);
+    color: var(--color-on-accent);
     font-weight: 600;
     text-decoration: none;
 }
@@ -57,8 +57,8 @@ a:focus-visible {
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --colorNeutralBackground1: #1f1f1f;
-        --colorNeutralForeground1: #ffffff;
-        --colorBrandForegroundLink: #5eead4;
+        --color-surface: #1f1f1f;
+        --color-text: #ffffff;
+        --color-link: #5eead4;
     }
 }

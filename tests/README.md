@@ -10,7 +10,7 @@ the CLI and editor find `global.json` and `Arbol.slnx`.
 | `Arbol.ComponentTests` | Account sign-in and management workflows, validation, shared account components, navigation, error request IDs, and the shared UI's `Counter`, using bUnit. |
 | `Arbol.IntegrationTests` | Focused in-process integration with real PostgreSQL via Testcontainers: migrations, EF/Identity stores, persistence across contexts, and dependency behavior. |
 | `Arbol.AspireIntegrationTests` | The real AppHost, database/migration startup dependencies, readiness, resource endpoints, and cross-process HTTP behavior. |
-| `Arbol.PlaywrightTests` | Real Chromium: Fluent icons/web components, desktop/mobile navigation, drawer behavior, counter interaction, document continuity, progressive-web-app installation, consent-based updates and the offline fallback, and axe heading-order/color-contrast checks with a 16px text-entry minimum. |
+| `Arbol.PlaywrightTests` | Real Chromium: responsive navigation and the collapsible navigation panel, counter interaction, document continuity, progressive-web-app installation, consent-based updates and the offline fallback, and axe heading-order/color-contrast checks with a 16px text-entry minimum. |
 
 `Arbol.Testing` is a shared support library, not a test project. It configures
 isolated AppHost builders for the Aspire and Playwright projects.
@@ -197,7 +197,7 @@ Both project-reference and compiled application-dependency checks enforce:
 
 | Subject | Allowed dependencies on other Arbol assemblies | Additional restrictions |
 | --- | --- | --- |
-| `Arbol.SharedKernel` | None | No ASP.NET Core, JS interop, or Fluent UI types; no server infrastructure listed below. |
+| `Arbol.SharedKernel` | None | No ASP.NET Core or JS interop types; no server infrastructure listed below. |
 | `Arbol.UI` | `Arbol.SharedKernel` | No server infrastructure listed below. |
 | `Arbol.Client` | `Arbol.UI`, `Arbol.SharedKernel` | No server infrastructure listed below. |
 
@@ -309,11 +309,11 @@ the Development OpenAPI document.
 Aspire starts actual processes, so test DI does not replace services in the web
 process. Configure resources before `BuildAsync`; retain startup dependencies.
 
-Use **Playwright** for browser-observable behavior: Fluent web components and
-icons, responsive navigation, focus, forms, cookies and render-mode transitions.
+Use **Playwright** for browser-observable behavior: responsive layout and
+navigation, focus, forms, cookies and render-mode transitions.
 The initial tests run Home → Counter → Home at desktop and mobile widths, increment
-the counter, check the mobile drawer closes, check for JavaScript errors/overflow,
-and verify `performance.timeOrigin` is unchanged. This demonstrates document
+the counter, open and collapse the mobile navigation panel, check for JavaScript
+errors/overflow, and verify `performance.timeOrigin` is unchanged. This demonstrates document
 continuity and working Auto interaction; it does not establish which Auto renderer
 was selected, passkey ceremonies, or every account workflow.
 
@@ -423,8 +423,8 @@ Assert rendered DOM values with Shouldly, or use `CompareTo` followed by
 `ShouldBeEmpty` for semantic markup. Dispatch UI events with helpers such as
 `ClickAsync`, then use `WaitForAssertionAsync` for Shouldly assertions
 that depend on a render; awaiting an event handler alone does not guarantee its
-render cycle has finished. When a test must invoke a component's own callback
-instead of a DOM event, such as a `FluentSelect`'s `ValueChanged` reached through
+render cycle has finished. When a test must invoke a component's own event
+callback instead of a DOM event, reached through
 `FindComponents<T>()[0].Instance`, wrap it in `component.InvokeAsync(...)`:
 bUnit's renderer rejects state changes made outside its dispatcher.
 Register component dependencies in `context.Services`
@@ -436,18 +436,16 @@ bUnit tests run in process without starting Aspire, a web server, or a browser.
 They verify component behavior, not browser layout, real JavaScript execution, or
 server/WebAssembly render-mode transitions; those need browser-level tests.
 
-Tests rendering Fluent components register `AddFluentUIComponents()` in their
-own context. `ConfigureAccount` also registers these services and strictly stubs
-the Fluent navigation module's initialize/dispose calls; the shell navigation
-tests configure the same calls locally and verify native links remain keyboard
-reachable without opting out of enhanced navigation. Counter tests stub the
-page's `FluentProviders` to isolate counter behavior from overlay JS, dispatch
-clicks on the rendered `fluent-button` host and assert the displayed count. They set bUnit's
+Tests rendering shared layout or navigation components need no component-library
+services: the UI is plain HTML and CSS, so bUnit and the ASP.NET Core framework
+reference supply everything. The shell navigation tests verify native links stay
+keyboard reachable without opting out of enhanced navigation. Counter tests
+dispatch clicks on the rendered native button and assert the displayed count. They set bUnit's
 `RendererInfo` explicitly and check that the button is disabled in static
 prerendering and enabled in Server and WebAssembly rendering. Navigation text
-assertions trim library-rendered whitespace while retaining checks for encoded
+assertions trim rendered whitespace while retaining checks for encoded
 identity text, conditional account links, and the logout POST/return URL.
-These JS stubs do not validate the web components or the static mobile drawer;
+bUnit does not validate the CSS responsive panel or the real stylesheets;
 check those in a browser through Aspire, including Auto's WebAssembly path.
 Navigation checks must cover unchanged `performance.timeOrigin` and no document
 requests between Home and Counter, mobile drawer close/reopen across repeated
