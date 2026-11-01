@@ -1,0 +1,10 @@
+<Router AppAssembly="typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Arbol.UI.UiAssemblyMarker).Assembly }" NotFoundPage="typeof(Arbol.UI.Features.Errors.Pages.NotFound)">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Arbol.UI.Layout.MainLayout)">
+            <NotAuthorized>
+                <RedirectToLogin />
+            </NotAuthorized>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>

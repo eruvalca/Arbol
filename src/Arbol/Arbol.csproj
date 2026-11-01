@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-Arbol-549f4083-a231-4481-8047-9c4e796b83f7</UserSecretsId>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Arbol.UnitTests" />
+    <InternalsVisibleTo Include="Arbol.ComponentTests" />
+    <InternalsVisibleTo Include="Arbol.IntegrationTests" />
+    <!-- NSubstitute proxies Identity dependencies whose generic user type is internal. -->
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Arbol.Client\Arbol.Client.csproj" />
+    <ProjectReference Include="..\Arbol.UI\Arbol.UI.csproj" />
+    <ProjectReference Include="..\Arbol.SharedKernel\Arbol.SharedKernel.csproj" />
+    <ProjectReference Include="..\Arbol.ServiceDefaults\Arbol.ServiceDefaults.csproj" />
+    <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="OneOf" />
+    <PackageReference Include="OneOf.SourceGenerator" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Serve the generated Fluent module instead of the installed package's copy. -->
+  <Import Project="../../build/FluentAsset.targets" />
+  <Import Project="../../build/PwaAssets.targets" />
+
+</Project>

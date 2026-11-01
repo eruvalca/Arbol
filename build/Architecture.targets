@@ -1,0 +1,29 @@
+<Project>
+  <PropertyGroup>
+    <_ArbolArchitectureKernel>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..', 'src', 'Arbol.SharedKernel', 'Arbol.SharedKernel.csproj'))</_ArbolArchitectureKernel>
+    <_ArbolArchitectureUi>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..', 'src', 'Arbol.UI', 'Arbol.UI.csproj'))</_ArbolArchitectureUi>
+    <_ArbolArchitectureClient>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', '..', 'src', 'Arbol.Client', 'Arbol.Client.csproj'))</_ArbolArchitectureClient>
+    <_ArbolArchitectureBuildTool>$([MSBuild]::NormalizePath('$(MSBuildThisFileDirectory)', 'Arbol.Build', 'Arbol.Build.csproj'))</_ArbolArchitectureBuildTool>
+  </PropertyGroup>
+
+  <!-- Validate evaluated items before the build prepares or resolves project references. -->
+  <Target Name="ValidateArchitectureProjectReferences"
+          BeforeTargets="PrepareForBuild;AssignProjectConfiguration"
+          Condition="'$(MSBuildProjectFullPath)' == '$(_ArbolArchitectureKernel)' Or '$(MSBuildProjectFullPath)' == '$(_ArbolArchitectureUi)' Or '$(MSBuildProjectFullPath)' == '$(_ArbolArchitectureClient)'">
+    <ItemGroup>
+      <_ArbolArchitectureAllowed Include="$(_ArbolArchitectureKernel)"
+                                Condition="'$(MSBuildProjectFullPath)' == '$(_ArbolArchitectureUi)' Or '$(MSBuildProjectFullPath)' == '$(_ArbolArchitectureClient)'" />
+      <_ArbolArchitectureAllowed Include="$(_ArbolArchitectureUi)"
+                                Condition="'$(MSBuildProjectFullPath)' == '$(_ArbolArchitectureClient)'" />
+      <!-- The existing Razor validator is a build tool, never an application assembly. -->
+      <_ArbolArchitectureChecked Include="@(ProjectReference)"
+                                Condition="!('$(UsingMicrosoftNETSdkRazor)' == 'true' And '%(ProjectReference.FullPath)' == '$(_ArbolArchitectureBuildTool)' And '%(ProjectReference.ReferenceOutputAssembly)' == 'false')" />
+      <_ArbolArchitectureForbidden Include="@(_ArbolArchitectureChecked->'%(FullPath)')" />
+      <_ArbolArchitectureForbidden Remove="@(_ArbolArchitectureAllowed)" />
+    </ItemGroup>
+    <Error Code="ARBOLARCH001"
+           File="$(MSBuildProjectFullPath)"
+           Condition="'@(_ArbolArchitectureForbidden)' != ''"
+           Text="Forbidden ProjectReference '%(_ArbolArchitectureForbidden.Identity)'. SharedKernel allows no project references; UI allows only SharedKernel; Client allows only UI and SharedKernel. The Razor validator has a build-only exception. See tests/README.md#architecture-boundaries." />
+  </Target>
+</Project>

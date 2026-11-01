@@ -1,0 +1,4 @@
+{
+  "dotnet.defaultSolution": "Arbol.slnx",
+  "aspire.dashboardBrowser": "openExternalBrowser"
+}

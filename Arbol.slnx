@@ -1,0 +1,24 @@
+<Solution>
+  <Folder Name="/build/">
+    <Project Path="build/Arbol.Build/Arbol.Build.csproj" />
+  </Folder>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="src/Arbol.ServiceDefaults/Arbol.ServiceDefaults.csproj" />
+  <Folder Name="/tests/">
+    <Project Path="tests/Arbol.AspireIntegrationTests/Arbol.AspireIntegrationTests.csproj" />
+    <Project Path="tests/Arbol.ComponentTests/Arbol.ComponentTests.csproj" />
+    <Project Path="tests/Arbol.IntegrationTests/Arbol.IntegrationTests.csproj" />
+    <Project Path="tests/Arbol.PlaywrightTests/Arbol.PlaywrightTests.csproj" />
+    <Project Path="tests/Arbol.Testing/Arbol.Testing.csproj" />
+    <Project Path="tests/Arbol.UnitTests/Arbol.UnitTests.csproj" />
+  </Folder>
+  <Project Path="src/Arbol.AppHost/Arbol.AppHost.csproj" />
+  <Project Path="src/Arbol.Client/Arbol.Client.csproj" />
+  <Project Path="src/Arbol.SharedKernel/Arbol.SharedKernel.csproj" />
+  <Project Path="src/Arbol.UI/Arbol.UI.csproj" />
+  <Project Path="src/Arbol/Arbol.csproj" />
+</Solution>
