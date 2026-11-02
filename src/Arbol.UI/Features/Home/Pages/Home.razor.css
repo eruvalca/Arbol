@@ -1,13 +1,6 @@
-.home-content ::deep .home-cards {
-    margin-top: var(--spacingVerticalXXL);
-}
-
-.home-content ::deep .home-cards .fluent-card {
-    min-width: 0;
-    height: 100%;
-    padding: var(--spacingVerticalXXL) var(--spacingHorizontalXXL);
-}
-
-h2, p {
-    margin: 0;
+/* Bare-bones responsive grid: two columns when space allows, one otherwise. */
+.home-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 1rem;
 }

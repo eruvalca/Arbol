@@ -7,7 +7,7 @@ shared kernel, plus Aspire hosting and service defaults.
 
 The rules in this file apply throughout the repository; rules for a path live
 beside it in `.github/instructions/NAME.instructions.md` — `ui` for components,
-code-behind, styling, rendering, and Fluent setup; `account` for Identity pages,
+code-behind, styling, and rendering; `account` for Identity pages,
 forms, and redirects; `server` for feature boundaries, persistence, and readiness;
 `aspire` for application lifecycle, migrations, and publish; `tests` for test
 selection and infrastructure; and `csharp` for C# and Razor authoring. Copilot loads
@@ -53,11 +53,10 @@ otherwise; Markdown links are relative to their containing file.
   [architecture tests](../tests/README.md#architecture-boundaries).
   Update the documented design and its checks together when intentionally changing
   them. Server feature and persistence rules live in the server guide.
-- Fluent UI Blazor services are registered in both hosts. Keep `MainLayout` and
-  Identity navigation static. Place `FluentProviders` inside the interactive
-  page or subtree that uses them, inheriting its renderer and service scope;
-  do not start an interactive runtime on every static page just for providers.
-  Do not pass the layout's `Body` across a render-mode boundary.
+- The UI is deliberately bare bones: plain HTML, CSS Grid layout, and stock
+  Blazor components, with no component library or design system. Keep
+  `MainLayout` and Identity navigation static, and do not pass the layout's
+  `Body` across a render-mode boundary.
 - Account pages use static server-side rendering (SSR). Preserve
   `[ExcludeFromInteractiveRouting]` in their page imports, authorization on
   account-management pages, and their HTTP context and cookie contracts. Keep

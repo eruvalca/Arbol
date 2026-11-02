@@ -136,41 +136,43 @@ Test Explorer without Aspire.
 
 See the [Aspire VS Code extension guide](https://aspire.dev/get-started/aspire-vscode-extension/).
 
-## Fluent UI Blazor and styling
+## Layout and styling
 
-`Microsoft.FluentUI.AspNetCore.Components` **5.0.1** is centrally pinned in
-`Directory.Packages.props` and referenced by the server, client, and shared UI.
-Both host `Program.cs` files call `AddFluentUIComponents()` so prerendering,
-Interactive Server, and Interactive WebAssembly resolve the same services.
-The shared kernel has no UI dependency. Fluent UI Blazor v5+ is the application's
-layout, styling, and component framework. Use its components and design tokens
-for new UI; do not introduce a parallel CSS framework or default to custom Grid/Flexbox.
+The UI is deliberately bare bones: plain HTML, a CSS Grid for layout, and stock
+Blazor components. There is no component library and no design system. Do not add
+a component framework, a CSS framework, or a CSS preprocessor. The shared kernel
+has no UI dependency.
 
-`Microsoft.FluentUI.AspNetCore.Components.Icons` **5.0.1** is referenced by the
-shared UI and flows to both hosts. Navigation uses `IconRest`/`IconActive` with
-regular/filled system icons; the counter uses `IconStart`. Use strongly typed
-instances such as `new Icons.Regular.Size20.Home()` (the Razor imports define the
-`Icons` alias) so publishing can retain referenced icons. Keep meaningful visible
-labels; redundant icons are decorative and not extra tab stops. No icon font,
-CDN, script, service registration, or separate emoji package is needed.
+Markup uses native elements — `<button>`, `<a>`, `<ul>`, `<section>` — and Blazor's
+own components: `NavLink`, `AuthorizeView`, `PageTitle`, `AntiforgeryToken`,
+`EditForm` and the `Input*` family, `ValidationMessage`, `Router`,
+`AuthorizeRouteView`, and `FocusOnNavigate`. Do not wrap a native element in a
+custom component that only forwards attributes. A `<button type="button">` with
+`@onclick` is the stock way to handle a click; Blazor ships no button component.
 
-`App.razor` loads the Fluent baseline stylesheet, `Arbol.styles.css`, then
-`app.css`. The generated solution stylesheet already imports the Fluent component
-CSS bundle; do not add a second link to that bundle. `no-fuib-style` on the body
-prevents Fluent's initializer from adopting another copy of the baseline after
-the application overrides. The package's Blazor JavaScript initializer loads the
-web components automatically, including static layout hamburger behavior. Do not
-add a v4 web-components script or `FluentDesignTheme`. The body selects a light
-theme and application styles use v5 CSS design tokens with fallback values.
+Two CSS grids carry the structure:
 
-The shell uses `FluentLayout`, `FluentNav`, and `FluentNavItem`; the home, counter,
-and authenticated pages use Fluent cards and buttons with native content links.
-Native anchors preserve accessible link names and navigation before JavaScript
-initializes. Account management
-has Fluent navigation and a card around its content. `FluentGrid`/`FluentGridItem`
-provide responsive page columns and `FluentStack` provides content spacing, with
-a mobile drawer below the Fluent layout's 768px breakpoint. Keep grid adaptive
-rendering off for static SSR; responsive CSS does not need a .NET event handler.
+- `src/Arbol.UI/Layout/MainLayout.razor.css` defines one grid with named `header`,
+  `navigation`, `content`, and `footer` areas. At 48rem and wider the navigation is
+  a 15rem column beside the content; below that the same grid collapses to a single
+  column with the navigation above the content. The navigation is always rendered,
+  so no toggle, overlay, focus trap, or JavaScript is involved and the shell works
+  under static SSR.
+- `src/Arbol/Features/Account/Components/ManageLayout.razor.css` places the account
+  menu beside the page content once there is room, and stacks them below that.
+- `src/Arbol.UI/Features/Home/Pages/Home.razor.css` uses an `auto-fit` grid so the
+  two home sections sit side by side when space allows.
+
+`src/Arbol/wwwroot/app.css` holds functional rules only: form controls stay at
+16px so mobile browsers do not zoom on focus. It is not a place for colours,
+typography, or component styling. Anything presentational should be added
+deliberately as a scoped `.razor.css` file for the component that needs it.
+
+Navigation uses ordinary `NavLink` anchors inside `<ul>` lists. Native anchors
+preserve accessible names and keyboard order before JavaScript initializes, and
+`NavLink` marks the current page with `aria-current="page"`. Give each navigation
+region its own `<nav aria-label>` element: `NavMenu` and `ManageNavMenu` each own
+one, and the shell provides only the grid cell around them.
 
 Render boundaries are deliberate:
 
@@ -178,52 +180,27 @@ Render boundaries are deliberate:
   use static SSR. `Counter` opts into `InteractiveAuto` because its button needs
   .NET event handling. Counter actions are disabled during prerendering until
   their renderer becomes interactive. Static pages don't start a .NET interactive
-  runtime simply to display navigation or cards.
-- `Counter` hosts `FluentProviders` inside its interactive boundary. Providers
-  inherit its renderer and scoped services for dialogs, toasts, tooltips, and key
-  handling. Add providers inside other interactive pages/subtrees when needed,
-  once per active renderer/service scope. The layout's `Body` never crosses an
-  interactive boundary.
-- Static navigation has ordinary `Href` links with `tabindex="0"`, since Fluent's
-  interactive roving-tabindex setup does not run in SSR. Shell links use Blazor's
-  enhanced navigation: the server renders the destination and Blazor updates the
-  existing document without restarting the page or reloading the runtime.
-  `Arbol.UI.lib.module.js` registers the collocated `MainLayout.razor.js` handler
-  through `afterWebStarted`. It closes the Fluent mobile drawer on
-  `enhancednavigationstart`, before the DOM update, including back/forward
-  navigation. Stable layout/hamburger IDs preserve their JS wiring across updates.
-  The shell grows with its content and uses document scrolling, allowing Blazor
-  to reset scroll position on navigation and restore it through browser history.
-  The account settings menu does not use interactive categories or event callbacks.
+  runtime just to display navigation.
+- Shell links use Blazor's enhanced navigation: the server renders the destination
+  and Blazor updates the existing document without restarting the page or
+  reloading the runtime. The shell grows with its content and uses document
+  scrolling, so Blazor resets and restores scroll position across navigation.
 - Identity forms retain native inputs, submit buttons, form names, antiforgery,
-  and passkey hooks. They receive Fluent token styling while preserving static
-  POST mapping, autofill, and cookie redirects. These POSTs keep normal navigation
-  so cookie changes refresh authentication state. Shared notices retain their
-  `notice`/`data-kind` contract. The reconnect/error UI retains native controls
-  because it must function while the Blazor circuit is unavailable.
+  and passkey hooks so static POST mapping, autofill, and cookie redirects keep
+  working. These POSTs keep normal navigation so cookie changes refresh
+  authentication state. Shared notices retain their `notice`/`data-kind` contract.
+  The reconnect/error UI retains native controls because it must function while the
+  Blazor circuit is unavailable.
 
-Shared styles live in `src/Arbol/wwwroot/app.css`: sizing, typography, forms
-(`account-form`, `form-field`, `checkbox-field`), action groups (`actions`),
-notices (`notice` with a semantic `data-kind`), and table overflow
-(`table-container`). Component-specific styles belong in adjacent `.razor.css`
-files. Use narrowly scoped `::deep` selectors for child component markup.
-
-Custom CSS is limited to application sizing, accessibility, and static form
-compatibility, using Fluent tokens. Prefer Fluent layout/spacing parameters;
-the library's generated styles are expected. Use normal flow for prose and
-semantic tables. Do not recreate Bootstrap utilities or add `!important` or
-ornamental animations. Use icons to clarify navigation/actions. Keep form
-labels before their controls and preserve Blazor/Identity behavior hooks when
-editing markup. Check narrow screens, keyboard focus, and text wrapping when
-changing layouts. See the [repository instructions](.github/copilot-instructions.md)
-and the [UI instructions](.github/instructions/ui.instructions.md) for the authoring
+Do not reintroduce Bootstrap or utility classes, add `!important`, or add
+ornamental animations. Keep form labels before their controls and preserve the
+Blazor/Identity behavior hooks when editing markup. See the
+[repository instructions](.github/copilot-instructions.md) and the
+[UI instructions](.github/instructions/ui.instructions.md) for the authoring
 conventions.
 
-Setup references: [installation](https://www.fluentui-blazor.net/installation),
-[layout](https://www.fluentui-blazor.net/layout), and the
-[released package source](https://github.com/microsoft/fluentui-blazor/tree/358e449b08711f3343ce6c2ffbe6c9f77045bde5).
-Navigation references: [enhanced navigation](https://learn.microsoft.com/aspnet/core/blazor/fundamentals/navigation?view=aspnetcore-10.0#enhanced-navigation-and-form-handling)
-and [JavaScript with static SSR](https://learn.microsoft.com/aspnet/core/blazor/javascript-interoperability/static-server-rendering?view=aspnetcore-10.0).
+References: [CSS Grid layout](https://developer.mozilla.org/docs/Web/CSS/CSS_grid_layout)
+and [enhanced navigation](https://learn.microsoft.com/aspnet/core/blazor/fundamentals/navigation?view=aspnetcore-10.0#enhanced-navigation-and-form-handling).
 
 ## Resource graph and database
 
@@ -438,21 +415,6 @@ Aspire skills, use `aspire agent init` with the **standard** skill location
 `.github` or VS Code agent configuration. Keep user secrets, dashboard tokens,
 runtime `.aspire` state, telemetry exports, Playwright CLI configuration and
 output, and temporary browser output out of source control.
-
-The [Fluent UI Blazor v5 usage skill](.agents/skills/fluentui-blazor-usage/SKILL.md)
-includes setup, data-grid, and theming references. The library is configured as
-described above; installing the skill alone does not configure an MCP server.
-When using its examples, follow the
-[C# and Razor conventions](.github/instructions/csharp.instructions.md) and the
-[UI instructions](.github/instructions/ui.instructions.md) for code-behind, CSS,
-static account rendering, and central package versions. Verify version-sensitive
-APIs against the Fluent UI Blazor MCP server's documentation and the released
-package source. The v5.0.1 package's assembly file version is `5.0.1.26287`, also
-reported by the installed MCP server. Its version checker compares this assembly
-version against the NuGet version and reports a false mismatch; `5.0.1.26287` is
-not the NuGet package version. Some skill examples still use prerelease APIs, so
-verify component names and parameters against the installed package instead of
-copying them verbatim.
 
 References: [Aspire MCP](https://aspire.dev/reference/cli/commands/aspire-agent-mcp/),
 [Copilot CLI skills](https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-skills),

@@ -1,3 +1,5 @@
+/* Bare-bones state handling for Blazor's reconnect dialog. Only the active
+   state is revealed; the browser's dialog styles provide its appearance. */
 .components-reconnect-first-attempt-visible,
 .components-reconnect-repeated-attempt-visible,
 .components-reconnect-failed-visible,
@@ -12,32 +14,4 @@
 #components-reconnect-modal.components-reconnect-paused .components-pause-visible,
 #components-reconnect-modal.components-reconnect-resume-failed .components-resume-failed-visible {
     display: block;
-}
-
-#components-reconnect-modal {
-    width: min(24rem, calc(100% - 2rem));
-    max-height: calc(100dvh - 2rem);
-    overflow: auto;
-    margin: auto;
-    padding: 1.5rem;
-    border: 1px solid #777;
-    background: #fff;
-    color: #222;
-}
-
-#components-reconnect-modal::backdrop {
-    background: rgb(0 0 0 / 35%);
-}
-
-.components-reconnect-container {
-    display: grid;
-    gap: 1rem;
-}
-
-.components-reconnect-container p {
-    margin: 0;
-}
-
-.components-reconnect-container button {
-    justify-self: start;
 }

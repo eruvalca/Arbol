@@ -37,7 +37,7 @@ public sealed class AccessibilityTests(ITestOutputHelper output)
         {
             await page.GotoAsync("/");
             await page.GetByRole(AriaRole.Heading, new() { Name = "Welcome to Arbol", Exact = true }).WaitForAsync();
-            await page.WaitForFunctionAsync("() => customElements.get('fluent-button') && typeof Blazor !== 'undefined'");
+            await page.WaitForFunctionAsync("() => typeof Blazor !== 'undefined'");
             await AssertAccessibilityAsync(page, "Home");
 
             await page.GotoAsync("/counter");
@@ -66,13 +66,7 @@ public sealed class AccessibilityTests(ITestOutputHelper output)
         // single level-1 heading and leave ordering to the axe rule below.
         (await page.Locator("h1").CountAsync()).ShouldBe(1, $"{pageName} must expose exactly one level-1 heading.");
 
-        // fluent-button[disabled] renders a native button whose accessible name is
-        // supplied by the component after hydration; sizing and contrast are checked
-        // on the enabled controls this page actually offers.
-        var result = await page.RunAxe(new AxeRunContext
-        {
-            Exclude = [new AxeSelector("fluent-button[disabled]")],
-        }, new AxeRunOptions
+        var result = await page.RunAxe(new AxeRunOptions
         {
             RunOnly = new RunOnlyOptions
             {

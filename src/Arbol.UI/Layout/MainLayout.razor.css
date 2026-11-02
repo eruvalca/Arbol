@@ -1,81 +1,45 @@
+/* Bare-bones layout only: one CSS Grid with named areas, collapsing to a single
+   column on narrow screens. No colours, typography, or component styling. */
 .page {
-    min-height: 100dvh;
-}
-
-.page ::deep .app-layout {
-    /* Let enhanced navigation manage document scrolling and history restoration. */
-    min-height: 100dvh;
-    overflow: visible;
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    grid-template-areas:
+        "header header"
+        "navigation content"
+        "footer footer";
+    gap: 1rem;
 }
 
 .site-header {
-    height: 100%;
-    padding-inline: 1.5rem;
-    background: var(--colorBrandBackground, #0f6cbd);
-    color: var(--colorNeutralForegroundOnBrand, #fff);
+    grid-area: header;
 }
 
-.site-name {
-    color: inherit;
-    font-size: 1.25rem;
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.site-name:focus-visible {
-    outline-color: var(--colorNeutralForegroundOnBrand, #fff);
-}
-
-.page ::deep .site-navigation {
-    width: 15rem;
+.site-navigation {
+    grid-area: navigation;
     min-width: 0;
-    padding-block: 1rem;
-    background: var(--colorNeutralBackground2, #fafafa);
-    border-inline-end: 1px solid var(--colorNeutralStroke2, #e0e0e0);
 }
 
 .content-container {
-    width: 100%;
-    max-width: 72rem;
+    grid-area: content;
     min-width: 0;
-    margin-inline: auto;
-    padding: clamp(1rem, 3vw, 2.5rem);
 }
 
 .site-footer {
-    padding-inline: 1.5rem;
-    color: var(--colorNeutralForeground2, #424242);
-    border-top: 1px solid var(--colorNeutralStroke2, #e0e0e0);
-    font-size: 0.875rem;
+    grid-area: footer;
 }
 
-.skip-link {
-    position: fixed;
-    top: -5rem;
-    left: 1rem;
-    z-index: 1000;
-    padding: 0.75rem 1rem;
-    background: var(--colorNeutralBackground1, #fff);
+@media (max-width: 47.99rem) {
+    .page {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas:
+            "header"
+            "navigation"
+            "content"
+            "footer";
+    }
 }
 
-.skip-link:focus {
-    top: 0.5rem;
-}
-
+/* Blazor reveals this panel by setting its display when an error occurs. */
 #blazor-error-ui {
     display: none;
-    position: fixed;
-    inset: auto 0 0;
-    z-index: 1000;
-    max-height: 100dvh;
-    overflow: auto;
-    padding: 1rem;
-    border-top: 1px solid var(--colorPaletteRedBorder2, #9c2525);
-    background: var(--colorNeutralBackground1, #fff);
-    color: var(--colorNeutralForeground1, #242424);
-}
-
-#blazor-error-ui ::deep .error-content {
-    max-width: 72rem;
-    margin-inline: auto;
 }
