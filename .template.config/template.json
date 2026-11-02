@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Arbol",
+  "classifications": ["Web", "Blazor", "Aspire"],
+  "identity": "Arbol.Solution",
+  "name": "Arbol Blazor solution",
+  "description": "Personal .NET 10 Blazor, Identity, PostgreSQL and Aspire starter. Use a simple PascalCase name (letters and digits only).",
+  "shortName": "arbol",
+  "sourceName": "Arbol",
+  "preferNameDirectory": true,
+  "tags": { "language": "C#", "type": "solution" },
+  "guids": [
+    "bf5c36b6-96f8-4909-bf20-e3af48f3a424",
+    "549f4083-a231-4481-8047-9c4e796b83f7"
+  ],
+  "symbols": {
+    "upperName": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "upperCase",
+      "replaces": "ARBOL"
+    }
+  },
+  "sources": [{
+    "copyOnly": [
+      ".template-provenance.json",
+      "scripts/Test-RazorCodeBehind.ps1",
+      "**/*.png", "**/*.jpg", "**/*.jpeg", "**/*.gif", "**/*.ico",
+      "**/*.webp", "**/*.woff", "**/*.woff2", "**/*.ttf", "**/*.pdf"
+    ],
+    "modifiers": [{
+      "exclude": [
+        "**/.git", "**/.git/**", "**/.aspire/**", "**/.vs/**", "**/.idea/**",
+        "**/bin/**", "**/obj/**", "**/artifacts/**", "**/TestResults/**",
+        "**/test-results/**", "**/playwright-report/**", "**/.playwright-cli/**",
+        "**/.playwright/**",
+        "**/node_modules/**", "**/.env", "**/.env.*", "**/secrets.json",
+        "**/*.user", "**/*.suo", "**/*.pfx", "**/*.p12", "**/*.pem", "**/*.key",
+        "**/*.db", "**/*.db-shm", "**/*.db-wal", "**/*.log", "**/*.binlog",
+        "**/*.nupkg", "**/*.snupkg", "**/*.dll", "**/*.exe", "**/*.pdb",
+        "templates/**", "docs/template/**", "scripts/template/**",
+        "scripts/Pack-Template.ps1", "scripts/Test-Template.ps1", "scripts/Install-Template.ps1"
+      ]
+    }]
+  }],
+  "primaryOutputs": [{ "path": "Arbol.slnx" }],
+  "postActions": [{
+    "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
+    "description": "Next steps",
+    "manualInstructions": [{
+      "text": "Enter your output directory and run dotnet build. Follow tests/README.md to install Playwright Chromium and prepare Docker/Aspire before running dotnet test. Use aspire run to start the application. See README.md for prerequisites, endpoint discovery, and production follow-ups. Only files were created; Git initialization is optional."
+    }]
+  }]
+}

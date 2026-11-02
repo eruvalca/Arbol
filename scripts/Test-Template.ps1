@@ -1,0 +1,181 @@
+#requires -Version 7.0
+[CmdletBinding()]
+param(
+    [Parameter(Mandatory)][string] $PackagePath,
+    # Useful during authoring; never produces an installable validation receipt.
+    [switch] $StructureOnly
+)
+
+. (Join-Path $PSScriptRoot 'template/Template.Common.ps1')
+$PackagePath = (Resolve-Path -LiteralPath $PackagePath).Path
+$package = Read-TemplatePackage $PackagePath
+$runRoot = Join-Path ([IO.Path]::GetTempPath()) ('arbol-template-validation-' + [guid]::NewGuid().ToString('N'))
+[IO.Directory]::CreateDirectory($runRoot) | Out-Null
+# Keep SDK selection consistent with the packaged application for install/generate.
+[IO.File]::WriteAllBytes((Join-Path $runRoot 'global.json'), $package.Files[$package.Prefix + 'global.json'])
+$repository = Split-Path $PSScriptRoot -Parent
+Assert-Template (-not $runRoot.StartsWith($repository.TrimEnd('\') + '\', [StringComparison]::OrdinalIgnoreCase)) 'Validation must run outside the source tree.'
+$hive = Join-Path $runRoot 'hive'
+$hiveArgs = @('--debug:custom-hive', $hive, '--debug:disable-sdk-templates')
+$receiptPath = "$PackagePath.validation.json"
+$receipt = [ordered]@{
+    status = 'Running'
+    level = $(if ($StructureOnly) { 'StructureOnly' } else { 'Full' })
+    packageSha256 = (Get-FileHash -LiteralPath $PackagePath -Algorithm SHA256).Hash
+    packageVersion = $package.Provenance.packageVersion
+    sourceCommit = $package.Provenance.sourceCommit
+    sdkVersion = (& dotnet --version).Trim()
+    runRoot = $runRoot
+    generatedSolutions = @()
+    commands = @()
+    runtimeSmoke = 'Separate Aspire/browser validation required; not performed by this script.'
+}
+
+function Invoke-ValidationCommand {
+    param([string] $Command, [string[]] $Arguments, [string] $LogName)
+    $receipt.commands += @{ command = $Command; arguments = $Arguments; directory = (Get-Location).Path; log = $LogName }
+    Invoke-TemplateCommand $Command $Arguments -LogPath (Join-Path $runRoot $LogName)
+}
+
+function ConvertTo-ExpectedName {
+    param([string] $Text, [string] $Name)
+    # The derived upperName symbol replaces the all-caps form that the template
+    # engine's built-in sourceName folding does not cover.
+    return $Text.Replace('Arbol', $Name).Replace('arbol', $Name.ToLowerInvariant()).Replace('ARBOL', $Name.ToUpperInvariant())
+}
+
+try {
+    Push-Location $runRoot
+    try {
+        $receipt.sdkVersion = (& dotnet --version).Trim()
+        Invoke-ValidationCommand dotnet (@('new', 'install', $PackagePath) + $hiveArgs) 'install.log'
+        $cases = @(
+            @{ name = 'TemplateSmoke'; directory = 'TemplateSmoke' },
+            @{ name = 'MyNewApp2'; directory = 'Parent With Spaces/MyNewApp2' },
+            @{ name = 'SameName'; directory = 'first/SameName' },
+            @{ name = 'SameName'; directory = 'second/SameName' },
+            # Postgres and PgAdmin are valid names whose lowercase forms could collide with infrastructure resources.
+            @{ name = 'Postgres'; directory = 'Postgres' },
+            @{ name = 'PgAdmin'; directory = 'PgAdmin' },
+            @{ name = 'Arbol'; directory = 'Control' }
+        )
+        $seenGuids = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+        $caseNumber = 0
+        foreach ($case in $cases) {
+            $caseNumber++
+            $name = $case.name
+            $directory = Join-Path $runRoot $case.directory
+            Invoke-ValidationCommand dotnet (@('new', 'arbol', '--name', $name, '--output', $directory) + $hiveArgs) "generate-$caseNumber.log"
+            $receipt.generatedSolutions += @{ name = $name; directory = $directory }
+            [xml] $appHost = Get-Content -Raw -LiteralPath (Join-Path $directory "src/$name.AppHost/$name.AppHost.csproj")
+            [xml] $web = Get-Content -Raw -LiteralPath (Join-Path $directory "src/$name/$name.csproj")
+            $hostGuid = [string] $appHost.SelectSingleNode('//UserSecretsId').InnerText
+            $webId = [string] $web.SelectSingleNode('//UserSecretsId').InnerText
+            Assert-Template ($webId.StartsWith("aspnet-$name-")) 'Web secrets ID was not renamed.'
+            $webGuid = $webId.Substring("aspnet-$name-".Length)
+            $guids = @($hostGuid, $webGuid)
+            foreach ($guid in $guids) {
+                Assert-Template ($guid -match '^[a-fA-F0-9]{8}(-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}$') 'Invalid generated secrets GUID.'
+                Assert-Template ($guid -notin $package.Config.guids -and $seenGuids.Add($guid)) 'Secrets GUID reused across generated applications.'
+            }
+            $expectedPaths = [Collections.Generic.List[string]]::new()
+            foreach ($entry in $package.Inventory.files) {
+                if ($entry.path.StartsWith('.template.config/')) { continue }
+                $renamed = ConvertTo-ExpectedName $entry.path $name
+                $expectedPaths.Add($renamed)
+                $generatedPath = Join-Path $directory $renamed
+                Assert-Template (Test-Path -LiteralPath $generatedPath -PathType Leaf) "Missing generated file: $renamed"
+                $bytes = $package.Files[$package.Prefix + $entry.path]
+                if ($entry.binary -or (Test-TemplateGlob $entry.path $package.Config.sources[0].copyOnly)) {
+                    $expectedHash = [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($bytes))
+                    Assert-Template ((Get-FileHash -LiteralPath $generatedPath).Hash -ceq $expectedHash) "Copy-only content changed: $renamed"
+                    continue
+                }
+                $expectedText = ConvertTo-ExpectedName ([Text.Encoding]::UTF8.GetString($bytes)) $name
+                $expectedText = $expectedText.Replace("//-:cnd:noEmit`n", '').Replace("//+:cnd:noEmit`n", '')
+                $expectedText = $expectedText.Replace("<!--/-:msbuild-conditional:noEmit -->`n", '').Replace("<!--/+:msbuild-conditional:noEmit -->`n", '')
+                for ($index = 0; $index -lt $guids.Count; $index++) {
+                    $expectedText = $expectedText.Replace($package.Config.guids[$index], $guids[$index])
+                }
+                $actualText = [IO.File]::ReadAllText($generatedPath)
+                Assert-Template ($actualText -ceq $expectedText) "Unexpected content transformation: $renamed"
+                if ($name -ne 'Arbol') {
+                    Assert-Template ($actualText -notmatch '(?i)arbol') "Unrenamed application reference in ${renamed}"
+                }
+            }
+            $actualPaths = Get-TemplateFiles $directory
+            Assert-Template (-not (Compare-Object @($expectedPaths | Sort-Object) $actualPaths -CaseSensitive)) 'Unexpected output files: possible restore, authoring content, or missing source.'
+            [xml] $solution = Get-Content -Raw -LiteralPath (Join-Path $directory "$name.slnx")
+            foreach ($project in $solution.SelectNodes('//Project')) {
+                Assert-Template (Test-Path -LiteralPath (Join-Path $directory $project.Path)) "Broken solution reference: $($project.Path)"
+            }
+            # Aspire resource names must stay unique for every supported application name.
+            $appHostSource = Get-Content -Raw -LiteralPath (Join-Path $directory "src/$name.AppHost/AppHost.cs")
+            $resourceNames = @([regex]::Matches($appHostSource, '(?:AddPostgres|AddDatabase|AddEFMigrations|AddProject<[^>]+>|WithName)\("([^"]+)"') |
+                ForEach-Object { $_.Groups[1].Value })
+            # WithPgAdmin creates this resource implicitly in run mode.
+            $resourceNames += 'pgadmin'
+            Assert-Template ($resourceNames.Count -ge 5) "Expected Aspire resource names in generated $name."
+            $seenResourceNames = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+            foreach ($resourceName in $resourceNames) {
+                Assert-Template ($seenResourceNames.Add($resourceName)) "Duplicate Aspire resource name '$resourceName' in generated $name."
+            }
+            Write-Host "PASS: $name in $($case.directory): $($actualPaths.Count) files; fresh secrets; exact content and naming."
+        }
+
+        # Exercise the same conditional-preservation transform used by the packer.
+        $fixture = Join-Path $runRoot 'conditional-source'
+        [IO.Directory]::CreateDirectory((Join-Path $fixture '.template.config')) | Out-Null
+        $fixtureConfig = @{ identity = 'Arbol.ConditionalProbe'; name = 'Conditional probe'; shortName = 'arbol-conditional-probe'; sourceName = 'Arbol' }
+        [IO.File]::WriteAllText((Join-Path $fixture '.template.config/template.json'), ($fixtureConfig | ConvertTo-Json))
+        $conditional = "namespace Arbol;`n#if DEBUG`ninternal sealed class DebugType { }`n#else`ninternal sealed class ReleaseType { }`n#endif`n"
+        [IO.File]::WriteAllText((Join-Path $fixture 'Probe.cs'), (ConvertTo-TemplateSource 'Probe.cs' $conditional))
+        $msbuildConditional = '<Project><Target Name="ArbolProbe"><Message Text="Arbol" Condition="''@(RazorComponent)'' != ''''" /></Target></Project>' + "`n"
+        [IO.File]::WriteAllText((Join-Path $fixture 'Probe.targets'), (ConvertTo-TemplateSource 'Probe.targets' $msbuildConditional))
+        Invoke-ValidationCommand dotnet (@('new', 'install', $fixture) + $hiveArgs) 'conditional-install.log'
+        $fixtureOutput = Join-Path $runRoot 'conditional-output'
+        Invoke-ValidationCommand dotnet (@('new', 'arbol-conditional-probe', '--name', 'ConditionalApp', '--output', $fixtureOutput) + $hiveArgs) 'conditional-generate.log'
+        Assert-Template ([IO.File]::ReadAllText((Join-Path $fixtureOutput 'Probe.cs')) -ceq $conditional.Replace('Arbol', 'ConditionalApp')) 'Compiler conditionals were altered or renaming was suppressed.'
+        Assert-Template ([IO.File]::ReadAllText((Join-Path $fixtureOutput 'Probe.targets')) -ceq $msbuildConditional.Replace('Arbol', 'ConditionalApp')) 'MSBuild conditions were altered or renaming was suppressed.'
+        Write-Host 'PASS: compiler/MSBuild conditions and name replacement coexist.'
+    }
+    finally { Pop-Location }
+
+    if (-not $StructureOnly) {
+        # Build before any default outputs exist, so a stale validator cannot hide
+        # a hard-coded bin path. Keep this separate from the normal runtime matrix.
+        Push-Location (Join-Path $runRoot 'first/SameName')
+        try {
+            Invoke-ValidationCommand dotnet @('build', 'SameName.slnx', '--artifacts-path', './custom build output', '--nologo') 'SameName-artifacts-build.log'
+        }
+        finally { Pop-Location }
+        foreach ($case in $cases[0..1]) {
+            $name = $case.name
+            Push-Location (Join-Path $runRoot $case.directory)
+            try {
+                # These are fresh directories; no Aspire instance has been started here.
+                foreach ($configuration in @('Debug', 'Release')) {
+                    Invoke-ValidationCommand dotnet @('build', "$name.slnx", '--configuration', $configuration, '--nologo') "$name-$configuration-build.log"
+                    if ($configuration -eq 'Debug') {
+                        Invoke-ValidationCommand pwsh @('-NoProfile', '-File', "tests/$name.PlaywrightTests/bin/Debug/net10.0/playwright.ps1", 'install', 'chromium') "$name-browser-install.log"
+                    }
+                    Invoke-ValidationCommand dotnet @('test', '--solution', "$name.slnx", '--configuration', $configuration, '--no-build') "$name-$configuration-test.log"
+                }
+                Invoke-ValidationCommand pwsh @('-NoProfile', '-File', 'scripts/Test-RazorCodeBehind.ps1') "$name-razor-policy.log"
+            }
+            finally { Pop-Location }
+        }
+    }
+    $receipt.status = 'Passed'
+    Write-Host "PASS: $($receipt.level) template validation. Logs and generated solutions: $runRoot"
+}
+catch {
+    $receipt.status = 'Failed'
+    $receipt.error = $_.Exception.Message
+    throw
+}
+finally {
+    $receipt.completedUtc = [DateTime]::UtcNow.ToString('O')
+    [IO.File]::WriteAllText($receiptPath, (($receipt | ConvertTo-Json -Depth 8) + "`n"))
+    Write-Host "Validation receipt: $receiptPath"
+}

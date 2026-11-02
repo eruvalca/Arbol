@@ -3,6 +3,17 @@
 .NET 10 Blazor application with a hosted WebAssembly client, shared UI and kernel,
 Aspire orchestration, and PostgreSQL-backed ASP.NET Core Identity.
 
+<!-- template-authoring:start -->
+## Personal solution template
+
+To create and refresh the local `dotnet new arbol` snapshot, follow
+[Template maintenance](docs/template/README.md). Packaging uses clean committed
+source, validates generated applications, and installs a local `.nupkg`.
+[Historical provenance](docs/template/historical-validation.md) records where the
+starter came from and is excluded from generated applications.
+
+<!-- template-authoring:end -->
+
 ## Local prerequisites
 
 - .NET SDK **10.0.401** (selected by `global.json`).

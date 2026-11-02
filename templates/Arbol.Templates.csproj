@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <PackageId>Arbol.Templates</PackageId>
+    <PackageType>Template</PackageType>
+    <Authors>Arbol</Authors>
+    <Description>Personal Arbol Blazor solution template snapshot.</Description>
+    <PackageReadmeFile>PACKAGE-README.md</PackageReadmeFile>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <NoBuild>true</NoBuild>
+    <!-- Template scripts are source files, never NuGet install/uninstall hooks. -->
+    <NoWarn>$(NoWarn);NU5110;NU5111</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Extensionless files are excluded from the wildcard: NuGet treats their
+         extension-free PackagePath as a directory. Add each hook explicitly. -->
+    <Content Include="$(TemplateContentRoot)/**/*"
+             Exclude="$(TemplateContentRoot)/.githooks/pre-commit;$(TemplateContentRoot)/.githooks/pre-push"
+             Pack="true"
+             PackagePath="content/Arbol/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="$(TemplateContentRoot)/.githooks/pre-commit" Pack="true"
+             PackagePath="content/Arbol/.githooks/" Link="pre-commit" />
+    <Content Include="$(TemplateContentRoot)/.githooks/pre-push" Pack="true"
+             PackagePath="content/Arbol/.githooks/" Link="pre-push" />
+    <None Include="PACKAGE-README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+  <Target Name="RequireStagedTemplate" BeforeTargets="Pack">
+    <Error Condition="'$(TemplateContentRoot)' == '' or !Exists('$(TemplateContentRoot)/.template-provenance.json')"
+           Text="Run scripts/Pack-Template.ps1 to pack a committed source snapshot." />
+  </Target>
+</Project>
