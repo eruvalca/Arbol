@@ -15,6 +15,7 @@ public sealed class NavigationTests(ITestOutputHelper output)
     [Theory]
     [InlineData(1280)]
     [InlineData(390)]
+    [InlineData(320)]
     [Trait("Category", "BrowserSmoke")]
     public async Task NavigationPreservesDocumentAndCounterWorks(int width)
     {
@@ -69,6 +70,11 @@ public sealed class NavigationTests(ITestOutputHelper output)
         await page.GetByRole(AriaRole.Heading, new() { Name = "Welcome to Arbol", Exact = true }).WaitForAsync();
         (await page.EvaluateAsync<double>("performance.timeOrigin")).ShouldBe(origin);
         (await page.EvaluateAsync<bool>("document.documentElement.scrollWidth <= innerWidth")).ShouldBeTrue();
+
+        // Enlarged browser text must not make the grid overflow horizontally.
+        await page.EvaluateAsync("() => { document.documentElement.style.fontSize = '20px'; }");
+        (await page.EvaluateAsync<bool>("document.documentElement.scrollWidth <= innerWidth"))
+            .ShouldBeTrue($"the layout must not overflow at {page.ViewportSize?.Width}px with enlarged text");
         errors.ShouldBeEmpty();
     }
 }

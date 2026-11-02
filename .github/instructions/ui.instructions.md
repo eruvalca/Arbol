@@ -55,8 +55,9 @@ enforcement.
   `AuthorizeRouteView`, `FocusOnNavigate`). Do not create a component whose only
   job is forwarding attributes to a native element; `<button type="button">` with
   `@onclick` is the stock click handler.
-- `src/Arbol/wwwroot/app.css` holds functional rules only — currently keeping form
-  controls at 16px so mobile browsers do not zoom on focus. Do not turn it into a
+- `src/Arbol/wwwroot/app.css` holds functional rules only — keeping form controls
+  at 16px so mobile browsers do not zoom on focus, and bounding `.table-container`
+  so wide account tables scroll instead of widening the page. Do not turn it into a
   design system: no colour, typography, or component styling belongs there. Add
   presentational CSS only when a task explicitly asks for it, in the narrowest
   scope that covers the need.
@@ -74,6 +75,12 @@ enforcement.
   browser test.
 - Do not reintroduce Bootstrap, `!important`, or ornamental animations, and do not
   hand-write inline styles for ordinary layout or spacing.
+- Contain user-supplied text instead of letting it widen the layout. Keep
+  `min-width: 0` on grid cells and add `overflow-wrap: anywhere` where unbroken
+  strings can appear; registration uses the email address as the user name, so the
+  navigation can hold one long token. Never rely on `min-width: 0` alone to wrap
+  text, and clamp grid track minimums with `min(100%, <size>)` so enlarged browser
+  text cannot force horizontal scrolling.
 - Keep enhanced navigation enabled for shell links. Identity POSTs still perform
   normal navigation to refresh cookies and authentication state. Keep the shell on
   document scrolling so enhanced navigation can reset and restore scroll position;
