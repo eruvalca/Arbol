@@ -157,7 +157,9 @@ outside the source tree, under a unique temporary directory. It retains outputs
 and command logs for inspection. It never changes the normal template registration.
 
 It generates `TemplateSmoke`, `MyNewApp2` under a path containing spaces, `SameName`
-twice in different directories, and `Arbol` as a control. All files, naming,
+twice in different directories, `Postgres` and `PgAdmin` (valid names whose
+lowercase forms could collide with infrastructure resources), and `Arbol` as a
+control. All files, naming,
 solution references, fresh secrets, binary integrity and absence of post-generation
 output are checked before any builds. It also verifies that no mixed-case or
 all-caps starter-name reference survives in transformed application text; the
