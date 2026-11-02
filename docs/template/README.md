@@ -27,7 +27,10 @@ agent, or trust certificates. IDEs may independently restore when opening a solu
 Supported names are PascalCase ASCII letters/digits, beginning with an uppercase
 letter, **1–40 characters**. Examples: `Contoso`, `MyNewApp2`. Avoid Windows device
 names (such as `Con`, `Nul`, `Com1`, `Lpt1`), `App` (it shadows the root component
-and namespace in generated Razor imports), dots, spaces, punctuation, and hyphens.
+and namespace in generated Razor imports), `Task`, `ValueTask`, and
+`CancellationToken` (the generated namespace shadows those framework types;
+CS0118), and `Program` (it collides with the top-level entry-point type; CS0101).
+Also avoid dots, spaces, punctuation, and hyphens.
 Output directories may contain spaces. This naming contract is documented, not
 enforced by a custom template host. Unsupported names may generate broken project
 references or invalid Aspire identifiers. The length limit leaves room for

@@ -7,8 +7,11 @@ dotnet new arbol --name MyNewApp --output D:\repos\MyNewApp
 ```
 
 Use a PascalCase ASCII name, starting with a letter and containing only letters
-and digits (1–40 characters). Windows device names, `App`, dotted names, spaces,
-and hyphens are unsupported. The output directory may contain spaces.
+and digits (1–40 characters). Windows device names, `App`, `Task`, `ValueTask`,
+`CancellationToken`, `Program`, dotted names, spaces, and hyphens are unsupported.
+`Task`, `ValueTask`, and `CancellationToken` are shadowed by the generated
+namespace (CS0118), and `Program` collides with the top-level entry-point type
+(CS0101). The output directory may contain spaces.
 
 Enter the generated directory and follow its README. Requires the .NET SDK,
 Aspire CLI, Docker, and trusted development HTTPS certificate. Creation runs no
