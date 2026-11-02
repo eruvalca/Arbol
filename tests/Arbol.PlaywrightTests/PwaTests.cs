@@ -148,9 +148,12 @@ public sealed class PwaTests(ITestOutputHelper output)
         // Chrome clears offline emulation asynchronously. Wait until a request the
         // service worker does not handle succeeds, otherwise the worker can still
         // serve the offline fallback document for the retry navigation.
+        // WaitForFunctionAsync has no options-only overload: pass the predicate
+        // argument explicitly so the timeout reaches the options parameter.
         await page.WaitForFunctionAsync(
             "async () => { try { await fetch('/counter'); return true; } catch { return false; } }",
-            new PageWaitForFunctionOptions { Timeout = 15_000 });
+            arg: null,
+            options: new PageWaitForFunctionOptions { Timeout = 15_000 });
     }
 
     private static async Task VerifyInstallActionAsync(IPage page)

@@ -161,12 +161,14 @@ Two CSS grids carry the structure:
 - `src/Arbol/Features/Account/Components/ManageLayout.razor.css` places the account
   menu beside the page content once there is room, and stacks them below that.
 - `src/Arbol.UI/Features/Home/Pages/Home.razor.css` uses an `auto-fit` grid so the
-  two home sections sit side by side when space allows.
+  two home sections sit side by side when space allows. Its track minimum is clamped
+  with `min(100%, 16rem)` so enlarged browser text cannot force overflow.
 
 `src/Arbol/wwwroot/app.css` holds functional rules only: form controls stay at
-16px so mobile browsers do not zoom on focus. It is not a place for colours,
-typography, or component styling. Anything presentational should be added
-deliberately as a scoped `.razor.css` file for the component that needs it.
+16px so mobile browsers do not zoom on focus, and `.table-container` keeps wide
+account tables inside the content column instead of widening the page. It is not a
+place for colours, typography, or component styling. Anything presentational should
+be added deliberately as a scoped `.razor.css` file for the component that needs it.
 
 Navigation uses ordinary `NavLink` anchors inside `<ul>` lists. Native anchors
 preserve accessible names and keyboard order before JavaScript initializes, and
