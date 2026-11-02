@@ -123,6 +123,7 @@ public sealed class PwaTests(ITestOutputHelper output)
         await page.ScreenshotAsync(new() { Path = Path.Combine(AppContext.BaseDirectory, "TestResults", $"pwa-offline-{page.ViewportSize?.Width}.png"), FullPage = true });
         (await page.EvaluateAsync<double>("performance.timeOrigin")).ShouldBe(origin);
         await context.SetOfflineAsync(false);
+        await WaitForNetworkAsync(page);
         await page.GetByRole(AriaRole.Link, new() { Name = "Try again", Exact = true }).ClickAsync();
         await page.GetByRole(AriaRole.Heading, new() { Name = "Welcome to Arbol", Exact = true }).WaitForAsync();
 
@@ -136,9 +137,20 @@ public sealed class PwaTests(ITestOutputHelper output)
         await AssertOfflineScreenAsync(page);
         await AssertPublicCacheOnlyAsync(page);
         await context.SetOfflineAsync(false);
+        await WaitForNetworkAsync(page);
         await page.GetByRole(AriaRole.Link, new() { Name = "Try again", Exact = true }).ClickAsync();
         await page.GetByRole(AriaRole.Heading, new() { Name = "Counter", Exact = true }).WaitForAsync();
         page.Url.ShouldBe(deepUrl);
+    }
+
+    private static async Task WaitForNetworkAsync(IPage page)
+    {
+        // Chrome clears offline emulation asynchronously. Wait until a request the
+        // service worker does not handle succeeds, otherwise the worker can still
+        // serve the offline fallback document for the retry navigation.
+        await page.WaitForFunctionAsync(
+            "async () => { try { await fetch('/counter'); return true; } catch { return false; } }",
+            new PageWaitForFunctionOptions { Timeout = 15_000 });
     }
 
     private static async Task VerifyInstallActionAsync(IPage page)
@@ -165,7 +177,7 @@ public sealed class PwaTests(ITestOutputHelper output)
     {
         await page.GetByRole(AriaRole.Heading, new() { Name = "Arbol can’t connect right now", Exact = true }).WaitForAsync();
         (await page.Locator("main img").EvaluateAsync<bool>("async image => { await image.decode(); return image.naturalWidth === 192; }")).ShouldBeTrue();
-        (await page.Locator(".retry").EvaluateAsync<string>("link => getComputedStyle(link).display")).ShouldBe("inline-block");
+        (await page.GetByRole(AriaRole.Link, new() { Name = "Try again", Exact = true }).IsVisibleAsync()).ShouldBeTrue();
         (await page.EvaluateAsync<bool>("document.documentElement.scrollWidth <= innerWidth")).ShouldBeTrue();
         (await page.Locator("main").InnerTextAsync()).ShouldContain("If a save was interrupted");
     }

@@ -136,34 +136,37 @@ Test Explorer without Aspire.
 
 See the [Aspire VS Code extension guide](https://aspire.dev/get-started/aspire-vscode-extension/).
 
-## Styling and layout
+## Layout and styling
 
-The UI is plain HTML, CSS, and Blazor with no component library. Layout uses
-CSS Grid, and styling uses CSS custom properties declared once in
-`src/Arbol/wwwroot/app.css`. Do not add a component framework, a CSS framework,
-or a CSS preprocessor; extend the shared tokens and classes instead. The shared
-kernel has no UI dependency.
+The UI is deliberately bare bones: plain HTML, a CSS Grid for layout, and stock
+Blazor components. There is no component library and no design system. Do not add
+a component framework, a CSS framework, or a CSS preprocessor. The shared kernel
+has no UI dependency.
 
-Application design tokens live in the `:root` block of `app.css`: `--color-*`
-for text, surfaces, borders, accent, and status colours, `--space-*` for
-spacing, `--radius-*` for corners, `--shadow-card` for elevation, and
-`--font-sans` for the type family. Component stylesheets resolve every colour
-and size from those tokens; add a token rather than a new literal when a value
-is reused. The document selects a light colour scheme.
+Markup uses native elements — `<button>`, `<a>`, `<ul>`, `<section>` — and Blazor's
+own components: `NavLink`, `AuthorizeView`, `PageTitle`, `AntiforgeryToken`,
+`EditForm` and the `Input*` family, `ValidationMessage`, `Router`,
+`AuthorizeRouteView`, and `FocusOnNavigate`. Do not wrap a native element in a
+custom component that only forwards attributes. A `<button type="button">` with
+`@onclick` is the stock way to handle a click; Blazor ships no button component.
 
-`App.razor` loads `Arbol.styles.css` (the generated scoped-CSS bundle) and then
-`app.css`. Custom properties are resolved at runtime, so the order only decides
-which declaration wins for the same property on the same element.
+Two CSS grids carry the structure:
 
-The shell is a single CSS Grid in `MainLayout.razor.css` with named `header`,
-`navigation`, `content`, and `footer` areas. At 48rem and wider the navigation
-is a fixed 15rem column beside the content; below that the same grid collapses
-to one column and the navigation becomes a disclosure panel driven by the
-`#site-menu-toggle` checkbox. No overlay, focus trap, or .NET event handler is
-needed, so the shell stays compatible with static SSR. `Arbol.UI.lib.module.js`
-registers the collocated `MainLayout.razor.js` handler through `afterWebStarted`,
-and that handler clears the checkbox on `enhancednavigationstart` so the panel
-collapses before Blazor patches in the next page.
+- `src/Arbol.UI/Layout/MainLayout.razor.css` defines one grid with named `header`,
+  `navigation`, `content`, and `footer` areas. At 48rem and wider the navigation is
+  a 15rem column beside the content; below that the same grid collapses to a single
+  column with the navigation above the content. The navigation is always rendered,
+  so no toggle, overlay, focus trap, or JavaScript is involved and the shell works
+  under static SSR.
+- `src/Arbol/Features/Account/Components/ManageLayout.razor.css` places the account
+  menu beside the page content once there is room, and stacks them below that.
+- `src/Arbol.UI/Features/Home/Pages/Home.razor.css` uses an `auto-fit` grid so the
+  two home sections sit side by side when space allows.
+
+`src/Arbol/wwwroot/app.css` holds functional rules only: form controls stay at
+16px so mobile browsers do not zoom on focus. It is not a place for colours,
+typography, or component styling. Anything presentational should be added
+deliberately as a scoped `.razor.css` file for the component that needs it.
 
 Navigation uses ordinary `NavLink` anchors inside `<ul>` lists. Native anchors
 preserve accessible names and keyboard order before JavaScript initializes, and
@@ -177,40 +180,27 @@ Render boundaries are deliberate:
   use static SSR. `Counter` opts into `InteractiveAuto` because its button needs
   .NET event handling. Counter actions are disabled during prerendering until
   their renderer becomes interactive. Static pages don't start a .NET interactive
-  runtime simply to display navigation or cards.
+  runtime just to display navigation.
 - Shell links use Blazor's enhanced navigation: the server renders the destination
   and Blazor updates the existing document without restarting the page or
-  reloading the runtime. Stable layout IDs preserve the drawer wiring across
-  updates. The shell grows with its content and uses document scrolling, allowing
-  Blazor to reset scroll position on navigation and restore it through browser
-  history.
+  reloading the runtime. The shell grows with its content and uses document
+  scrolling, so Blazor resets and restores scroll position across navigation.
 - Identity forms retain native inputs, submit buttons, form names, antiforgery,
-  and passkey hooks. They use the shared tokens while preserving static POST
-  mapping, autofill, and cookie redirects. These POSTs keep normal navigation so
-  cookie changes refresh authentication state. Shared notices retain their
-  `notice`/`data-kind` contract. The reconnect/error UI retains native controls
-  because it must function while the Blazor circuit is unavailable.
+  and passkey hooks so static POST mapping, autofill, and cookie redirects keep
+  working. These POSTs keep normal navigation so cookie changes refresh
+  authentication state. Shared notices retain their `notice`/`data-kind` contract.
+  The reconnect/error UI retains native controls because it must function while the
+  Blazor circuit is unavailable.
 
-Shared styles live in `src/Arbol/wwwroot/app.css`: the token block, element
-baseline, forms (`account-form`, `form-field`, `checkbox-field`), buttons
-(`button-primary`, `button-subtle`), cards (`card`, `card-links`), navigation
-lists (`nav-list`, `nav-section-label`), action groups (`actions`), notices
-(`notice` with a semantic `data-kind`), and table overflow (`table-container`).
-Component-specific styles belong in adjacent `.razor.css` files. Use narrowly
-scoped `::deep` selectors only when child component markup requires them.
-
-Use normal flow for prose and semantic tables. Do not reintroduce Bootstrap or
-utility classes, add `!important`, or add ornamental animations. Keep form labels
-before their controls, provide a visible focus indicator, and preserve
-Blazor/Identity behavior hooks when editing markup. Check narrow screens, keyboard
-focus, and text wrapping when changing layouts. See the
+Do not reintroduce Bootstrap or utility classes, add `!important`, or add
+ornamental animations. Keep form labels before their controls and preserve the
+Blazor/Identity behavior hooks when editing markup. See the
 [repository instructions](.github/copilot-instructions.md) and the
 [UI instructions](.github/instructions/ui.instructions.md) for the authoring
 conventions.
 
-References: [CSS Grid layout](https://developer.mozilla.org/docs/Web/CSS/CSS_grid_layout),
-[enhanced navigation](https://learn.microsoft.com/aspnet/core/blazor/fundamentals/navigation?view=aspnetcore-10.0#enhanced-navigation-and-form-handling),
-and [JavaScript with static SSR](https://learn.microsoft.com/aspnet/core/blazor/javascript-interoperability/static-server-rendering?view=aspnetcore-10.0).
+References: [CSS Grid layout](https://developer.mozilla.org/docs/Web/CSS/CSS_grid_layout)
+and [enhanced navigation](https://learn.microsoft.com/aspnet/core/blazor/fundamentals/navigation?view=aspnetcore-10.0#enhanced-navigation-and-form-handling).
 
 ## Resource graph and database
 

@@ -26,10 +26,6 @@ public sealed class CounterTests
         component.Find("[role='status']").TextContent.ShouldBe("Current count: 0");
         var button = component.Find("button");
         button.TextContent.Trim().ShouldBe("Click me");
-        var classes = button.GetAttribute("class") ?? string.Empty;
-        classes.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-            .Any(token => string.Equals(token, "button-primary", StringComparison.Ordinal))
-            .ShouldBeTrue("the increment control must use the shared primary button style");
         button.HasAttribute("disabled").ShouldBe(!interactive);
     }
 

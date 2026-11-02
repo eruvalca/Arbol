@@ -53,10 +53,10 @@ otherwise; Markdown links are relative to their containing file.
   [architecture tests](../tests/README.md#architecture-boundaries).
   Update the documented design and its checks together when intentionally changing
   them. Server feature and persistence rules live in the server guide.
-- The UI is plain HTML, CSS, and Blazor with no component framework: lay out with
-  CSS Grid and resolve styles from the shared tokens in
-  `src/Arbol/wwwroot/app.css`. Keep `MainLayout` and Identity navigation static,
-  and do not pass the layout's `Body` across a render-mode boundary.
+- The UI is deliberately bare bones: plain HTML, CSS Grid layout, and stock
+  Blazor components, with no component library or design system. Keep
+  `MainLayout` and Identity navigation static, and do not pass the layout's
+  `Body` across a render-mode boundary.
 - Account pages use static server-side rendering (SSR). Preserve
   `[ExcludeFromInteractiveRouting]` in their page imports, authorization on
   account-management pages, and their HTTP context and cookie contracts. Keep

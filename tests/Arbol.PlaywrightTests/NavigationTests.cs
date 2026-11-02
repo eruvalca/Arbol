@@ -38,7 +38,7 @@ public sealed class NavigationTests(ITestOutputHelper output)
         var page = await context.NewPageAsync();
         try
         {
-            await VerifyNavigationAsync(page, width);
+            await VerifyNavigationAsync(page);
         }
         finally
         {
@@ -47,7 +47,7 @@ public sealed class NavigationTests(ITestOutputHelper output)
         }
     }
 
-    private static async Task VerifyNavigationAsync(IPage page, int width)
+    private static async Task VerifyNavigationAsync(IPage page)
     {
         var errors = new ConcurrentQueue<string>();
         page.PageError += (_, error) => errors.Enqueue(error);
@@ -56,9 +56,7 @@ public sealed class NavigationTests(ITestOutputHelper output)
         await page.WaitForFunctionAsync("() => typeof Blazor !== 'undefined'");
         var origin = await page.EvaluateAsync<double>("performance.timeOrigin");
 
-        await OpenNavigationAsync(page, width);
-        var counter = page.GetByRole(AriaRole.Link, new() { Name = "Counter", Exact = true });
-        await counter.ClickAsync();
+        await page.GetByRole(AriaRole.Link, new() { Name = "Counter", Exact = true }).ClickAsync();
         // The button is disabled during prerendering until the renderer is interactive.
         await page.Locator("button:not([disabled])").Filter(new() { HasText = "Click me" }).WaitForAsync();
         var increment = page.GetByRole(AriaRole.Button, new() { Name = "Click me", Exact = true });
@@ -66,33 +64,11 @@ public sealed class NavigationTests(ITestOutputHelper output)
         await page.GetByRole(AriaRole.Status).Filter(new() { HasText = "Current count: 1" }).WaitForAsync();
         (await page.GetByRole(AriaRole.Status).InnerTextAsync()).ShouldBe("Current count: 1");
         (await page.EvaluateAsync<double>("performance.timeOrigin")).ShouldBe(origin);
-        await AssertNavigationCollapsedAsync(page, width);
 
-        await OpenNavigationAsync(page, width);
         await page.GetByRole(AriaRole.Link, new() { Name = "Home", Exact = true }).ClickAsync();
         await page.GetByRole(AriaRole.Heading, new() { Name = "Welcome to Arbol", Exact = true }).WaitForAsync();
         (await page.EvaluateAsync<double>("performance.timeOrigin")).ShouldBe(origin);
-        await AssertNavigationCollapsedAsync(page, width);
         (await page.EvaluateAsync<bool>("document.documentElement.scrollWidth <= innerWidth")).ShouldBeTrue();
         errors.ShouldBeEmpty();
-    }
-
-    private static async Task OpenNavigationAsync(IPage page, int width)
-    {
-        if (width < 768)
-        {
-            await page.Locator(".site-menu-button").ClickAsync();
-            await page.Locator("#site-navigation").WaitForAsync();
-        }
-    }
-
-    private static async Task AssertNavigationCollapsedAsync(IPage page, int width)
-    {
-        if (width < 768)
-        {
-            var navigation = page.Locator("#site-navigation");
-            await navigation.WaitForAsync(new() { State = WaitForSelectorState.Hidden });
-            (await navigation.IsVisibleAsync()).ShouldBeFalse();
-        }
     }
 }

@@ -42,36 +42,38 @@ enforcement.
   requirements, including the ban on serializing tokens or reusing a completed
   prerender request's token in a circuit.
 
-## Styling and layout
+## Layout and styling
 
-- This solution has no UI component library. Build the interface from semantic
-  HTML with CSS Grid for layout and CSS for styling. Do not add a component
-  framework, a CSS framework, a CSS preprocessor, or utility classes.
-- Declare reusable values as custom properties in the `:root` block of
-  `src/Arbol/wwwroot/app.css` and reference them from every stylesheet. Use the
-  existing `--color-*`, `--space-*`, `--radius-*`, `--shadow-card`, and
-  `--font-sans` tokens instead of new literal colours and sizes; add a token when
-  a value is reused.
-- Keep the shared baseline and reusable form, button, card, navigation, notice,
-  and table patterns in `app.css` (`account-form`, `form-field`, `checkbox-field`,
-  `actions`, `button-primary`, `button-subtle`, `card`, `card-links`, `nav-list`,
-  `nav-section-label`, `notice`, `table-container`). Keep component-specific rules
-  in adjacent `.razor.css` files, with narrowly scoped `::deep` selectors only
-  when child component markup requires them.
+- This solution has no UI component library and, deliberately, no visual design
+  yet. Keep the interface bare bones and functional: semantic HTML, CSS Grid for
+  layout, and CSS only where a rule is needed for behavior or accessibility. Do
+  not add a component framework, a CSS framework, a CSS preprocessor, or utility
+  classes.
+- Use native elements (`<button>`, `<a>`, `<ul>`, `<section>`) and Blazor's own
+  components (`NavLink`, `AuthorizeView`, `PageTitle`, `AntiforgeryToken`,
+  `EditForm` with the `Input*` family, `ValidationMessage`, `Router`,
+  `AuthorizeRouteView`, `FocusOnNavigate`). Do not create a component whose only
+  job is forwarding attributes to a native element; `<button type="button">` with
+  `@onclick` is the stock click handler.
+- `src/Arbol/wwwroot/app.css` holds functional rules only — currently keeping form
+  controls at 16px so mobile browsers do not zoom on focus. Do not turn it into a
+  design system: no colour, typography, or component styling belongs there. Add
+  presentational CSS only when a task explicitly asks for it, in the narrowest
+  scope that covers the need.
+- Layout lives in a few CSS Grids: `MainLayout.razor.css` (named `header`,
+  `navigation`, `content`, and `footer` areas, one column below 48rem),
+  `ManageLayout.razor.css` (account menu beside the content once there is room),
+  and `Home.razor.css` (an `auto-fit` two-section grid). Add structure to these
+  grids rather than introducing a layout framework.
+- The navigation is always rendered and stacks above the content on narrow
+  screens. Do not reintroduce a hidden drawer, toggle widget, or overlay; they
+  need JavaScript and focus management that static SSR does not provide.
 - A malformed `.razor.css` rule is not a build error. It reaches the generated
   scoped-CSS bundle as written, and an unterminated block swallows every following
   rule in the assembly, breaking unrelated pages. Verify scoped-CSS edits with a
   browser test.
-- Use descriptive classes rather than utility classes. Do not reintroduce
-  Bootstrap, `!important`, or ornamental animations, and do not hand-write inline
-  styles for ordinary layout or spacing. Prefer normal flow and CSS Grid.
-- The shell is one CSS Grid in `MainLayout.razor.css` with named `header`,
-  `navigation`, `content`, and `footer` areas. At 48rem and wider the navigation is
-  a side column; below it the grid collapses to one column and the navigation
-  becomes the `#site-menu-toggle` disclosure panel. Keep the toggle a real
-  focusable input with a visible `<label>`, keep `#main-content` and the layout IDs
-  stable across server renders, and close the panel from `MainLayout.razor.js` on
-  `enhancednavigationstart`. Do not force full reloads to close it.
+- Do not reintroduce Bootstrap, `!important`, or ornamental animations, and do not
+  hand-write inline styles for ordinary layout or spacing.
 - Keep enhanced navigation enabled for shell links. Identity POSTs still perform
   normal navigation to refresh cookies and authentication state. Keep the shell on
   document scrolling so enhanced navigation can reset and restore scroll position;
@@ -88,6 +90,7 @@ enforcement.
   buttons, tables, and all Blazor/Identity form and reconnect hooks.
 - Shared notices use `class="notice"` with `data-kind="success"`, `"error"`,
   `"warning"`, or `"information"`. Keep meaning in the message, not just color.
+  bUnit tests assert this contract.
 - Opt plain GET forms into enhanced handling with `data-enhance` when they target
   a Blazor page. Keep Identity, logout, and other cookie-changing POSTs as normal
   navigations.

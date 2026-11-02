@@ -3,16 +3,10 @@
 <a class="skip-link" href="#main-content" data-enhance-nav="false">Skip to content</a>
 
 <div class="page">
-    <input type="checkbox" id="site-menu-toggle" class="site-menu-toggle"
-           aria-label="Show navigation menu" aria-controls="site-navigation" />
     <header class="site-header">
-        <label class="site-menu-button" for="site-menu-toggle">
-            <span class="site-menu-icon" aria-hidden="true"></span>
-            <span>Menu</span>
-        </label>
         <a class="site-name" href="/">Arbol</a>
     </header>
-    <div id="site-navigation" class="site-navigation">
+    <div class="site-navigation">
         <NavMenu />
     </div>
     <main id="main-content" class="content-container" tabindex="-1">
@@ -26,9 +20,7 @@
 </div>
 
 <div id="blazor-error-ui" data-nosnippet>
-    <div class="error-content">
-        <span>An unhandled error has occurred.</span>
-        <a href="." class="reload">Reload</a>
-        <button type="button" class="dismiss">Dismiss</button>
-    </div>
+    <span>An unhandled error has occurred.</span>
+    <a href="." class="reload">Reload</a>
+    <button type="button" class="dismiss">Dismiss</button>
 </div>

@@ -10,7 +10,7 @@ the CLI and editor find `global.json` and `Arbol.slnx`.
 | `Arbol.ComponentTests` | Account sign-in and management workflows, validation, shared account components, navigation, error request IDs, and the shared UI's `Counter`, using bUnit. |
 | `Arbol.IntegrationTests` | Focused in-process integration with real PostgreSQL via Testcontainers: migrations, EF/Identity stores, persistence across contexts, and dependency behavior. |
 | `Arbol.AspireIntegrationTests` | The real AppHost, database/migration startup dependencies, readiness, resource endpoints, and cross-process HTTP behavior. |
-| `Arbol.PlaywrightTests` | Real Chromium: responsive navigation and the collapsible navigation panel, counter interaction, document continuity, progressive-web-app installation, consent-based updates and the offline fallback, and axe heading-order/color-contrast checks with a 16px text-entry minimum. |
+| `Arbol.PlaywrightTests` | Real Chromium: responsive navigation, counter interaction, document continuity, progressive-web-app installation, consent-based updates and the offline fallback, and axe heading-order/color-contrast checks with a 16px text-entry minimum. |
 
 `Arbol.Testing` is a shared support library, not a test project. It configures
 isolated AppHost builders for the Aspire and Playwright projects.
@@ -312,8 +312,8 @@ process. Configure resources before `BuildAsync`; retain startup dependencies.
 Use **Playwright** for browser-observable behavior: responsive layout and
 navigation, focus, forms, cookies and render-mode transitions.
 The initial tests run Home → Counter → Home at desktop and mobile widths, increment
-the counter, open and collapse the mobile navigation panel, check for JavaScript
-errors/overflow, and verify `performance.timeOrigin` is unchanged. This demonstrates document
+the counter, check for JavaScript errors/overflow, and verify `performance.timeOrigin`
+is unchanged. This demonstrates document
 continuity and working Auto interaction; it does not establish which Auto renderer
 was selected, passkey ceremonies, or every account workflow.
 
@@ -445,7 +445,7 @@ dispatch clicks on the rendered native button and assert the displayed count. Th
 prerendering and enabled in Server and WebAssembly rendering. Navigation text
 assertions trim rendered whitespace while retaining checks for encoded
 identity text, conditional account links, and the logout POST/return URL.
-bUnit does not validate the CSS responsive panel or the real stylesheets;
+bUnit does not validate the CSS responsive layout or the real stylesheets;
 check those in a browser through Aspire, including Auto's WebAssembly path.
 Navigation checks must cover unchanged `performance.timeOrigin` and no document
 requests between Home and Counter, mobile drawer close/reopen across repeated

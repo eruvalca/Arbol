@@ -9,10 +9,8 @@
 <h1>You are authenticated</h1>
 
 <AuthorizeView>
-    <section class="card account-summary">
+    <section>
         <p>Hello @context.User.Identity?.Name!</p>
-        <ul class="card-links">
-            <li><a href="Account/Manage">Manage your account</a></li>
-        </ul>
+        <p><a href="Account/Manage">Manage your account</a></p>
     </section>
 </AuthorizeView>

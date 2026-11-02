@@ -5,13 +5,9 @@
 
 <h1>Counter</h1>
 
-<div class="counter-content">
-    <section class="card">
-        <p role="status">Current count: @_currentCount</p>
-        <button type="button"
-                class="button-primary"
-                title="Click me"
-                disabled="@(!RendererInfo.IsInteractive)"
-                @onclick="IncrementCount">Click me</button>
-    </section>
-</div>
+<p role="status">Current count: @_currentCount</p>
+
+<button type="button"
+        title="Click me"
+        disabled="@(!RendererInfo.IsInteractive)"
+        @onclick="IncrementCount">Click me</button>

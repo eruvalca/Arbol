@@ -2,13 +2,13 @@
 
 @inject NavigationManager NavigationManager
 
-<div class="navigation-content">
+<div>
     <nav aria-label="Main navigation">
-        <ul class="nav-list">
+        <ul>
             <li><NavLink href="/" Match="NavLinkMatch.All">Home</NavLink></li>
             <li><NavLink href="counter">Counter</NavLink></li>
             <li><NavLink href="auth">Auth Required</NavLink></li>
-            <li class="nav-section-label">Account</li>
+            <li>Account</li>
             <AuthorizeView>
                 <Authorized>
                     <li><NavLink href="Account/Manage">@context.User.Identity?.Name</NavLink></li>
@@ -22,7 +22,7 @@
     </nav>
     <AuthorizeView>
         <Authorized>
-            <form class="logout-form" action="Account/Logout" method="post">
+            <form action="Account/Logout" method="post">
                 <AntiforgeryToken />
                 <input type="hidden" name="ReturnUrl" value="@_currentUrl" />
                 <button type="submit">Logout</button>
