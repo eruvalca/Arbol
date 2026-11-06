@@ -234,15 +234,21 @@ of these were actually exercised.
 The full Blazor architecture, sample pages, Identity/passkey implementation,
 plain HTML/CSS Grid styling, migrations, five test suites and their shared Aspire
 support library, build policies, Copilot instruction files, checked-in skills,
-GitHub workflows, VS Code settings and Playwright configuration are included.
+Aspire MCP registration in the generated `.mcp.json`, GitHub workflows, VS Code
+settings and Playwright configuration are included.
 The baseline does not set `AspireCliInvocationMode=DnxPinned`.
 
 Machine prerequisites remain external: .NET SDK, Aspire CLI, Docker, PowerShell 7,
-Edge/browser tooling, certificate trust, installed IDE extensions, agent plugins
-and the existing user-level Aspire MCP entry. Most are reusable on this machine.
+Edge/browser tooling, certificate trust, installed IDE extensions and agent
+plugins. Most are reusable on this machine.
 The first build/start still needs network access or populated package/tool/image
 caches. The SDK has the existing `latestFeature` roll-forward policy, not an
 embedded runtime; future upgrades require revalidation.
+
+Generated applications already register the Aspire MCP server through the
+checked-in `.mcp.json` (`aspire agent mcp`), so no user-level entry is needed.
+Keep one entry per agent; add a user-scope `aspire` server only as an alternative
+for machines that do not use the repository registration.
 
 User secrets values, generated database credentials, accounts/passkeys/recovery
 codes, database/pgAdmin data, editor session state, Git history/remotes, hosted
