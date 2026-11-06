@@ -1,0 +1,14 @@
+{
+  "directories": ["src/", "tests/", "build/", ".agents/skills/", ".github/", "scripts/"],
+  "files": [
+    ".template.config/template.json", ".editorconfig", ".gitattributes", ".gitignore",
+    ".mcp.json",
+    ".vscode/extensions.json", ".vscode/launch.json",
+    ".vscode/settings.json", ".vscode/tasks.json", ".githooks/pre-commit", ".githooks/pre-push",
+    "CodeMetricsConfig.txt",
+    "Directory.Build.props", "Directory.Build.targets", "Directory.Packages.props",
+    "global.json", "Arbol.slnx", "aspire.config.json", "README.md"
+  ],
+  "textExtensions": [".cs", ".csproj", ".razor", ".css", ".js", ".json", ".webmanifest", ".html", ".md", ".txt", ".props", ".targets", ".globalconfig", ".slnx", ".ps1", ".yml", ".yaml", ".http"],
+  "binaryExtensions": [".png", ".jpg", ".jpeg", ".gif", ".ico", ".webp", ".woff", ".woff2", ".ttf", ".pdf"]
+}
